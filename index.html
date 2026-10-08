@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>飞花音 · 异步音乐飞花令</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23B5372E'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23F6F2EA' font-family='serif'>飞</text></svg>">
+<style>
+:root{
+  --paper:#F6F2EA; --card:#FFFFFF; --ink:#211C16; --sub:#8C8272; --faint:#B4AA97;
+  --line:#EAE3D5; --red:#B5372E; --red-soft:#F4E3E0; --green:#2C6E63; --green-soft:#E3EEEA;
+  --gold:#A9853C; --shadow:0 6px 22px rgba(58,44,30,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  font-family:"Noto Sans SC",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--ink); background:#D9D2C3;
+  display:flex; justify-content:center; align-items:flex-start;
+}
+.serif{font-family:"Noto Serif SC","Songti SC",serif;}
+.phone{
+  width:100%; max-width:430px; min-height:100vh; background:var(--paper);
+  position:relative; display:flex; flex-direction:column;
+  box-shadow:0 0 60px rgba(0,0,0,.18); overflow:hidden;
+}
+@media(min-width:480px){.phone{min-height:92vh;margin:4vh 0;border-radius:34px;overflow:hidden;}}
+.view{display:none;flex:1;flex-direction:column;min-height:100%;}
+.view.active{display:flex;}
+.scroll{flex:1;overflow-y:auto;padding-bottom:108px;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* 通用头部 */
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;padding:14px 16px;
+  background:rgba(246,242,234,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
+.topbar.room-top{background:rgba(246,242,234,.94);}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--ink);cursor:pointer;flex:none;}
+.icon-btn:active{background:var(--line);}
+.topbar h1{font-size:18px;font-weight:700;flex:1;}
+.topbar .sub{font-size:11px;color:var(--sub);font-weight:400;margin-top:1px;}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#c98a6a,#a85a44);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex:none;}
+
+/* 首页 */
+.hello{padding:18px 18px 6px;}
+.hello .hi{font-size:13px;color:var(--sub);}
+.hello h2{font-size:23px;font-weight:900;margin-top:3px;letter-spacing:.5px;}
+.ai-note{display:flex;gap:9px;align-items:flex-start;margin:14px 18px 4px;padding:12px 13px;background:var(--green-soft);border-radius:14px;font-size:12.5px;color:#27584f;line-height:1.55;}
+.ai-note b{color:var(--green);}
+.section-h{display:flex;align-items:baseline;justify-content:space-between;padding:20px 18px 10px;}
+.section-h h3{font-size:16px;font-weight:700;}
+.section-h span{font-size:11.5px;color:var(--faint);}
+/* 今日大卡 */
+.today{margin:6px 18px;border-radius:22px;padding:20px;color:#FBEFEA;position:relative;overflow:hidden;
+  background:linear-gradient(150deg,#7a2320,#B5372E 60%,#cf5a45);box-shadow:var(--shadow);cursor:pointer;}
+.today .big{position:absolute;right:-6px;top:-18px;font-size:130px;font-weight:900;opacity:.16;line-height:1;}
+.today .lab{font-size:11px;letter-spacing:3px;opacity:.85;}
+.today .word{font-size:40px;font-weight:900;margin:6px 0 2px;}
+.today p{font-size:12px;opacity:.9;line-height:1.5;max-width:78%;}
+.today .go{margin-top:14px;display:inline-flex;align-items:center;gap:6px;background:#FBEFEA;color:var(--red);
+  border:none;border-radius:20px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;}
+/* 房间卡 */
+.room-list{padding:0 18px;display:flex;flex-direction:column;gap:11px;}
+.room-card{display:flex;align-items:center;gap:13px;background:var(--card);border-radius:17px;padding:13px 14px;box-shadow:var(--shadow);cursor:pointer;border:1px solid #f0eae0;position:relative;}
+.room-card:active{transform:scale(.985);}
+.rank-badge{position:absolute;top:-7px;left:-6px;min-width:22px;height:22px;border-radius:8px;font-size:11px;font-weight:900;
+  color:#fff;display:flex;align-items:center;justify-content:center;padding:0 5px;box-shadow:0 3px 8px rgba(0,0,0,.18);}
+.rank-1{background:linear-gradient(135deg,#E8B93C,#B98322);}
+.rank-2{background:linear-gradient(135deg,#B9C0C9,#7C8692);}
+.rank-3{background:linear-gradient(135deg,#C98A5A,#96532E);}
+.zi{width:50px;height:50px;border-radius:15px;background:var(--red-soft);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;flex:none;}
+.zi.g{background:var(--green-soft);color:var(--green);}
+.room-card .info{flex:1;min-width:0;}
+.room-card .info .t{font-size:15px;font-weight:700;}
+.room-card .info .m{font-size:11.5px;color:var(--sub);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;}
+.pill{background:var(--paper);border-radius:8px;padding:2px 7px;}
+.room-card .mine{font-size:11px;color:var(--green);font-weight:700;flex:none;text-align:right;}
+/* 底部 tab */
+.tabbar{position:absolute;bottom:0;left:0;right:0;height:74px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);display:flex;padding-bottom:14px;z-index:30;}
+.tab{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:var(--faint);cursor:pointer;}
+.tab.on{color:var(--red);font-weight:700;}
+.fab{position:absolute;bottom:90px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--red);color:#fff;border:none;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(181,55,46,.42);z-index:31;cursor:pointer;}
+
+/* 房间页：AI 意境背景板 */
+.bgboard{position:relative;height:170px;overflow:hidden;flex:none;border-bottom:1px solid var(--line);}
+.bgboard img{width:100%;height:170px;object-fit:cover;object-position:center 30%;}
+.bgboard .wash{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(246,242,234,.25),rgba(246,242,234,.72) 88%,var(--paper));}
+.bgboard .bz{position:absolute;top:22px;left:20px;font-size:64px;font-weight:900;color:rgba(33,28,22,.82);
+  text-shadow:0 2px 12px rgba(255,255,255,.5);line-height:1;}
+.bgboard .ai-badge{position:absolute;bottom:10px;right:14px;font-size:10px;color:var(--sub);background:rgba(246,242,234,.75);
+  border-radius:10px;padding:3px 9px;backdrop-filter:blur(4px);}
+.bgboard .ai-badge b{color:var(--green);}
+.bgboard.custom{background:linear-gradient(160deg,#efe7d6,#e2d4b8);}
+.bgboard.custom .gen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;}
+.bgboard.custom .gen .spark{font-size:20px;animation:pulse2 1.4s ease-in-out infinite;}
+.bgboard.custom .gen span{font-size:11px;color:var(--sub);}
+@keyframes pulse2{0%,100%{opacity:.35}50%{opacity:1}}
+.rulebar{margin:12px 16px 0;padding:12px 14px;background:var(--card);border-radius:14px;border:1px dashed #e0c9b6;font-size:12.5px;line-height:1.6;color:#5d5040;}
+.rulebar .k{color:var(--red);font-weight:700;}
+.playlist-bar{margin:10px 16px 4px;padding:11px 14px;background:var(--green-soft);border-radius:13px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.playlist-bar .txt{flex:1;font-size:12.5px;color:#27584f;}
+.playlist-bar .txt b{color:var(--green);}
+.playlist-bar .arrow{color:var(--green);}
+/* 主链 */
+.feed{padding:10px 16px 6px;display:flex;flex-direction:column;gap:14px;}
+.empty-room{text-align:center;padding:38px 20px;color:var(--sub);font-size:13px;line-height:1.7;}
+.empty-room .big-zi{font-size:54px;font-weight:900;color:var(--faint);margin-bottom:8px;}
+.voice-card{background:var(--card);border-radius:17px;padding:13px 13px 9px;box-shadow:var(--shadow);border:1px solid #f0eae0;}
+.vc-head{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+.vc-head .nm{font-size:13.5px;font-weight:700;flex:1;}
+.vc-head .tm{font-size:10.5px;color:var(--faint);}
+.vc-head .avatar{width:30px;height:30px;font-size:12px;}
+.score-tag{font-size:10px;font-weight:700;border-radius:8px;padding:2px 8px;flex:none;}
+.score-first{background:var(--green-soft);color:var(--green);}
+.score-dup{background:var(--paper);color:var(--sub);}
+.voice-bar{display:flex;align-items:center;gap:10px;background:var(--paper);border-radius:12px;padding:9px 12px;}
+.wave{display:flex;align-items:center;gap:2.5px;height:26px;flex:none;}
+.wave i{width:3px;background:var(--red);border-radius:2px;opacity:.55;}
+.voice-bar .dur{font-size:11px;color:var(--sub);flex:none;font-variant-numeric:tabular-nums;}
+.voice-bar .lyr{font-size:12.5px;color:var(--ink);flex:1;line-height:1.4;min-width:0;}
+.voice-bar .lyr em{color:var(--red);font-style:normal;font-weight:700;}
+.listen{margin-top:9px;display:inline-flex;align-items:center;gap:6px;background:var(--green-soft);color:var(--green);
+  border:none;border-radius:20px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+.listen:active{transform:scale(.96);}
+.vc-actions{display:flex;align-items:center;gap:16px;margin-top:9px;padding-top:8px;border-top:1px solid #f3ede2;}
+.act{display:flex;align-items:center;gap:4px;border:none;background:none;font-size:11.5px;color:var(--sub);cursor:pointer;padding:2px;}
+.act:active{color:var(--red);}
+.act.liked{color:var(--red);font-weight:700;}
+.act .n{font-variant-numeric:tabular-nums;}
+/* 跟唱归并（飞书式） */
+.dups{margin-top:9px;margin-left:6px;padding-left:12px;border-left:2px solid var(--red-soft);display:flex;flex-direction:column;gap:8px;}
+.dup{display:flex;align-items:center;gap:8px;background:#faf6ef;border-radius:10px;padding:7px 9px;}
+.dup .avatar{width:24px;height:24px;font-size:10px;}
+.dup .mini-wave{display:flex;gap:2px;align-items:center;height:18px;flex:none;}
+.dup .mini-wave i{width:2.5px;background:var(--faint);border-radius:2px;}
+.dup .dlyr{font-size:11px;color:var(--sub);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dup .dlisten{border:none;background:none;color:var(--green);cursor:pointer;flex:none;display:flex;}
+.dup .who{font-size:10.5px;color:var(--faint);flex:none;}
+/* 折叠评论 */
+.comments{margin-top:8px;margin-left:6px;padding-left:12px;border-left:2px solid #efe8da;display:flex;flex-direction:column;gap:7px;}
+.cmt{display:flex;gap:7px;font-size:11.5px;line-height:1.45;}
+.cmt .avatar{width:22px;height:22px;font-size:10px;}
+.cmt .cb{background:#f6f1e7;border-radius:9px;padding:5px 9px;color:#4d4438;}
+.cmt .cb b{color:var(--ink);}
+.cmt .rx{font-size:10px;color:var(--faint);margin-top:2px;display:flex;gap:9px;}
+.cmt .rx span{cursor:pointer;}
+.emoji-react{display:flex;gap:5px;align-items:center;font-size:12px;}
+.expand{border:none;background:none;font-size:11px;color:var(--faint);cursor:pointer;padding:2px 0;align-self:flex-start;}
+.collapsed-more{display:none;flex-direction:column;gap:7px;}
+.collapsed-more.open{display:flex;}
+/* 底部录音栏 */
+.recbar{position:absolute;bottom:0;left:0;right:0;padding:12px 16px 20px;background:linear-gradient(to top,rgba(246,242,234,.98) 70%,rgba(246,242,234,.6),transparent);
+  display:flex;align-items:center;gap:12px;z-index:25;}
+.rec-hint{flex:1;font-size:12px;color:var(--sub);line-height:1.4;}
+.rec-hint b{color:var(--red);}
+.rec-btn{width:54px;height:54px;border-radius:50%;background:var(--red);border:none;color:#fff;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 18px rgba(181,55,46,.4);cursor:pointer;flex:none;transition:transform .15s;}
+.rec-btn:active{transform:scale(.92);}
+.rec-btn.rec{background:#d8493f;animation:pulse 1.2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(216,73,63,.5)}70%{box-shadow:0 0 0 16px rgba(216,73,63,0)}100%{box-shadow:0 0 0 0 rgba(216,73,63,0)}}
+
+/* 一起听弹层 */
+.overlay{position:absolute;inset:0;background:rgba(33,28,22,.5);z-index:60;opacity:0;pointer-events:none;transition:opacity .28s;display:flex;align-items:flex-end;}
+.overlay.open{opacity:1;pointer-events:auto;}
+.sheet{width:100%;background:var(--card);border-radius:26px 26px 0 0;padding:8px 20px 30px;transform:translateY(100%);transition:transform .32s cubic-bezier(.22,.9,.3,1);}
+.overlay.open .sheet{transform:translateY(0);}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 16px;}
+.player{display:flex;flex-direction:column;align-items:center;}
+.disc-wrap{position:relative;width:188px;height:188px;margin:6px 0 16px;}
+.disc{width:100%;height:100%;border-radius:50%;background:
+  radial-gradient(circle at center,#3a342c 0 16%,#17130f 16.5% 22%,#2a241d 22.5% 60%,#120f0b 60.5% 100%);
+  position:relative;box-shadow:0 14px 34px rgba(0,0,0,.34);animation:spin 7s linear infinite;animation-play-state:paused;}
+.disc.playing{animation-play-state:running;}
+.disc::after{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-radial-gradient(circle,rgba(255,255,255,.035) 0 2px,transparent 2px 5px);}
+.disc .hole{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:50%;
+  background:linear-gradient(135deg,var(--red),#7a2320);display:flex;align-items:center;justify-content:center;color:#f3d9c8;font-size:22px;font-weight:900;z-index:2;}
+.arm{position:absolute;top:-12px;right:-6px;width:64px;height:104px;transform-origin:top right;transform:rotate(-24deg);transition:transform .3s;z-index:3;}
+.arm.on{transform:rotate(6deg);}
+.arm .bar{position:absolute;top:0;left:50%;width:5px;height:84px;background:linear-gradient(#d8d2c4,#9b9483);border-radius:3px;}
+.arm .tip{position:absolute;bottom:6px;left:42%;width:12px;height:20px;background:#c8c0ad;border-radius:3px;transform:rotate(18deg);}
+.arm .pivot{position:absolute;top:-8px;right:-4px;width:20px;height:20px;border-radius:50%;background:#b6ad99;border:3px solid #827a68;}
+.player .pname{font-size:19px;font-weight:900;}
+.player .partist{font-size:12.5px;color:var(--sub);margin-top:3px;}
+.ai-tag{margin-top:9px;font-size:10.5px;color:var(--green);background:var(--green-soft);padding:4px 11px;border-radius:12px;display:flex;align-items:center;gap:5px;}
+.prog{width:100%;margin-top:16px;}
+.prog .track{height:4px;background:var(--line);border-radius:3px;position:relative;cursor:pointer;}
+.prog .track .fill{position:absolute;left:0;top:0;bottom:0;width:34%;background:var(--red);border-radius:3px;}
+.prog .track .knob{position:absolute;top:50%;left:34%;transform:translate(-50%,-50%);width:11px;height:11px;border-radius:50%;background:var(--red);}
+.prog .times{display:flex;justify-content:space-between;font-size:10.5px;color:var(--faint);margin-top:6px;font-variant-numeric:tabular-nums;}
+.p-ctrl{display:flex;align-items:center;gap:26px;margin-top:16px;}
+.p-ctrl button{border:none;background:none;cursor:pointer;color:var(--ink);display:flex;}
+.p-ctrl .play{width:60px;height:60px;border-radius:50%;background:var(--red);color:#fff;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(181,55,46,.38);}
+.p-lyric{margin-top:16px;font-size:12px;color:var(--sub);text-align:center;line-height:1.6;background:var(--paper);border-radius:12px;padding:10px 14px;width:100%;}
+.p-lyric .hl{color:var(--red);font-weight:700;}
+.p-btns{display:flex;gap:10px;margin-top:16px;width:100%;}
+.p-btns button{flex:1;border-radius:13px;padding:11px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);display:flex;align-items:center;justify-content:center;gap:6px;}
+.p-btns .primary{background:var(--green);color:#fff;border-color:var(--green);}
+
+/* 自建房间弹层 */
+.modal{position:absolute;inset:0;background:rgba(33,28,22,.5);z-index:70;opacity:0;pointer-events:none;transition:opacity .25s;display:flex;align-items:center;justify-content:center;padding:30px;}
+.modal.open{opacity:1;pointer-events:auto;}
+.modal-card{width:100%;background:var(--card);border-radius:22px;padding:22px 20px;box-shadow:0 20px 50px rgba(0,0,0,.35);}
+.modal-card h3{font-size:17px;font-weight:900;margin-bottom:4px;}
+.modal-card .msub{font-size:12px;color:var(--sub);margin-bottom:16px;}
+.modal-card input{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:13px 15px;font-size:18px;font-weight:700;font-family:inherit;text-align:center;color:var(--ink);background:var(--paper);}
+.modal-card input:focus{outline:none;border-color:var(--red);}
+.modal-card .hint{font-size:11px;color:var(--faint);text-align:center;margin-top:8px;}
+.modal-btns{display:flex;gap:10px;margin-top:16px;}
+.modal-btns button{flex:1;border-radius:13px;padding:11px;font-size:13.5px;font-weight:700;cursor:pointer;}
+.modal-btns .cancel{border:1px solid var(--line);background:var(--card);color:var(--sub);}
+.modal-btns .ok{background:var(--red);color:#fff;border:none;}
+
+/* toast */
+.toast{position:absolute;left:50%;bottom:120px;transform:translateX(-50%) translateY(20px);background:rgba(33,28,22,.94);color:#fff;
+  font-size:12.5px;padding:10px 18px;border-radius:22px;z-index:80;opacity:0;transition:.25s;white-space:nowrap;pointer-events:none;max-width:88%;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* 真实录音语音条 */
+.vb-play{width:32px;height:32px;border-radius:50%;background:var(--red);color:#fff;border:none;
+  display:flex;align-items:center;justify-content:center;font-size:12px;flex:none;cursor:pointer;}
+.voice-bar.real-audio{background:#fbf7ef;}
+.voice-bar.real-audio.playing{background:var(--red-soft);}
+.voice-bar.playing .wave i{animation:wavepulse .7s ease-in-out infinite;}
+.voice-bar.playing .wave i:nth-child(2n){animation-delay:.15s;}
+.voice-bar.playing .wave i:nth-child(3n){animation-delay:.3s;}
+@keyframes wavepulse{0%,100%{opacity:.35}50%{opacity:1}}
+.rec-timer{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);font-size:11px;color:var(--red);
+  background:var(--red-soft);border-radius:10px;padding:3px 10px;display:none;z-index:26;}
+.rec-timer.show{display:block;}
+/* 评论输入 */
+.cmt-row{display:flex;gap:8px;margin-top:8px;align-items:center;}
+.cmt-input{flex:1;border:1px solid var(--line);border-radius:10px;padding:7px 10px;font-size:12px;background:var(--paper);font-family:inherit;color:var(--ink);}
+.cmt-input:focus{outline:none;border-color:var(--red);}
+.cmt-send{border:none;background:var(--green);color:#fff;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;flex:none;}
+/* 战绩页 */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px;margin-top:4px;}
+.stat-card{background:var(--card);border-radius:14px;padding:12px 8px;text-align:center;box-shadow:var(--shadow);}
+.stat-card .v{font-size:22px;font-weight:900;color:var(--red);}
+.stat-card .l{font-size:10.5px;color:var(--sub);margin-top:3px;}
+.level-banner{margin:14px 16px 0;padding:14px;background:linear-gradient(135deg,var(--red-soft),#f7ece0);border-radius:16px;display:flex;align-items:center;gap:12px;}
+.level-banner .zi2{width:52px;height:52px;border-radius:14px;background:var(--red);color:#FBEFEA;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;flex:none;}
+.level-banner .lv{flex:1;min-width:0;}
+.level-banner .lv b{font-size:15px;}
+.level-banner .lv .pbar{height:5px;background:rgba(181,55,46,.15);border-radius:3px;margin-top:7px;overflow:hidden;}
+.level-banner .lv .pbar i{display:block;height:100%;background:var(--red);border-radius:3px;}
+.level-banner .lv .pl{font-size:10.5px;color:var(--sub);margin-top:5px;}
+.room-stats{padding:0 16px;display:flex;flex-direction:column;gap:8px;}
+.rstat{display:flex;align-items:center;gap:11px;background:var(--card);border-radius:13px;padding:10px 13px;box-shadow:var(--shadow);cursor:pointer;}
+.rstat .zi{width:40px;height:40px;font-size:20px;border-radius:12px;flex:none;}
+.rstat .info{flex:1;min-width:0;}
+.rstat .info .t{font-size:13.5px;font-weight:700;}
+.rstat .info .m{font-size:10.5px;color:var(--sub);margin-top:2px;}
+.rstat .sc{font-weight:900;color:var(--green);font-size:14px;flex:none;}
+.poster-wrap{padding:0 16px;}
+.poster{background:#FBEFEA;border:1px solid #ead9c8;border-radius:18px;padding:20px;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow);}
+.poster .pz{position:absolute;right:-14px;top:-24px;font-size:110px;font-weight:900;color:rgba(181,55,46,.08);line-height:1;}
+.poster .pt{font-size:11px;letter-spacing:4px;color:var(--sub);}
+.poster .pv{font-size:56px;font-weight:900;color:var(--red);margin:6px 0 2px;}
+.poster .pl2{font-size:12px;color:var(--sub);}
+.poster .qr{margin:12px auto 6px;width:84px;height:84px;border:1px solid #d8c4ae;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;letter-spacing:2px;color:var(--ink);font-weight:900;}
+.poster .pfoot{font-size:10px;color:var(--faint);}
+/* 我的页 */
+.me-head{display:flex;align-items:center;gap:14px;padding:20px 18px 6px;}
+.me-head .avatar{width:62px;height:62px;font-size:26px;}
+.me-head .info{flex:1;min-width:0;}
+.me-head .info b{font-size:18px;}
+.me-head .info .sub2{font-size:11.5px;color:var(--sub);margin-top:4px;}
+.lv-chip{display:inline-block;font-size:10.5px;font-weight:700;color:var(--red);background:var(--red-soft);border-radius:8px;padding:2px 8px;margin-top:6px;}
+.song-list{padding:0 16px;display:flex;flex-direction:column;gap:8px;}
+.srow{display:flex;align-items:center;gap:11px;background:var(--card);border-radius:13px;padding:10px 13px;box-shadow:var(--shadow);cursor:pointer;}
+.srow .no{width:24px;font-size:13px;font-weight:900;color:var(--faint);text-align:center;flex:none;}
+.srow .info{flex:1;min-width:0;}
+.srow .info .t{font-size:13.5px;font-weight:700;}
+.srow .info .m{font-size:10.5px;color:var(--sub);}
+.srow .tag{font-size:9.5px;color:var(--green);background:var(--green-soft);border-radius:7px;padding:2px 7px;flex:none;}
+/* 设置页 */
+.set-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);cursor:pointer;margin-bottom:10px;gap:10px;}
+.set-row .sl{font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:8px;flex:none;}
+.set-row .sv{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:4px;text-align:right;}
+.set-input{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 13px;font-size:13px;font-family:inherit;background:var(--paper);color:var(--ink);margin-top:8px;}
+.set-input:focus{outline:none;border-color:var(--red);}
+/* 搜索结果 */
+.sres{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:300px;overflow-y:auto;}
+.sres-item{display:flex;align-items:center;gap:10px;background:var(--paper);border-radius:12px;padding:9px 12px;cursor:pointer;border:1px solid transparent;}
+.sres-item:active{border-color:var(--red);}
+.sres-item .zi{width:38px;height:38px;font-size:19px;border-radius:11px;flex:none;}
+.sres-item .info{flex:1;min-width:0;}
+.sres-item .info .t{font-size:13.5px;font-weight:700;}
+.sres-item .info .m{font-size:10.5px;color:var(--sub);}
+.sres-empty{font-size:12px;color:var(--faint);text-align:center;padding:14px 0;}
+/* 称号图鉴 */
+.tl-row{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:13px;margin-bottom:8px;background:var(--paper);}
+.tl-row.cur{background:var(--red-soft);border:1px solid rgba(181,55,46,.3);}
+.tl-row .zi2{width:44px;height:44px;font-size:20px;border-radius:12px;flex:none;}
+.tl-row .info{flex:1;min-width:0;}
+.tl-row .info .t{font-size:14px;font-weight:700;}
+.tl-row .info .m{font-size:10.5px;color:var(--sub);margin-top:2px;}
+.tl-row .st{font-size:10.5px;font-weight:700;color:var(--green);flex:none;}
+.tl-row .st.lock{color:var(--faint);}
+/* 文字发言卡 */
+.voice-card .txt-body{font-size:14px;line-height:1.7;color:var(--ink);background:var(--paper);border-radius:12px;padding:10px 12px;margin-bottom:9px;}
+/* AI 故事卡 */
+.story-line{font-size:11px;color:var(--sub);background:var(--green-soft);border-radius:10px;padding:6px 10px;margin-top:8px;line-height:1.5;}
+.p-story{font-size:11px;color:var(--green);background:var(--green-soft);border-radius:10px;padding:6px 10px;margin-top:6px;text-align:center;line-height:1.5;width:100%;}
+/* 实时对战入口横幅 */
+.battle-banner{margin:14px 18px 0;padding:14px 16px;border-radius:16px;background:linear-gradient(120deg,#2c6e63,#3d8a75);color:#fff;display:flex;align-items:center;justify-content:space-between;cursor:pointer;box-shadow:0 8px 20px rgba(44,110,99,.3);}
+.battle-banner .bb-txt{display:flex;flex-direction:column;gap:3px;}
+.battle-banner .bb-txt b{font-size:15px;}
+.battle-banner .bb-txt span{font-size:10.5px;opacity:.85;}
+.battle-banner .bb-go{font-size:13px;font-weight:700;background:rgba(255,255,255,.18);border-radius:12px;padding:7px 13px;}
+/* 多维筛选条 */
+.filter-bar{display:flex;gap:8px;padding:12px 18px 0;overflow-x:auto;scrollbar-width:none;}
+.filter-bar::-webkit-scrollbar{display:none;}
+.fchip{flex:none;font-size:12px;color:var(--sub);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;}
+.fchip.on{color:var(--red);border-color:var(--red);background:var(--red-soft);font-weight:700;}
+.fchip.dim{opacity:.5;}
+/* 对战界面 */
+.battle-hint{font-size:12px;color:var(--sub);padding:14px 18px 8px;line-height:1.6;}
+.mode-card{display:flex;align-items:center;gap:13px;background:var(--card);border-radius:16px;padding:13px 15px;box-shadow:var(--shadow);cursor:pointer;margin:0 16px 10px;}
+.mode-card:active{transform:scale(.985);}
+.mode-icon{width:44px;height:44px;border-radius:13px;background:var(--green-soft);display:flex;align-items:center;justify-content:center;font-size:21px;flex:none;}
+.mode-info{flex:1;min-width:0;}
+.mode-info b{font-size:14.5px;display:block;}
+.mode-info span{font-size:11px;color:var(--sub);}
+.mode-go{color:var(--faint);font-size:18px;}
+.kw-grid{display:flex;gap:10px;padding:6px 18px 4px;flex-wrap:wrap;}
+.kw-chip{width:58px;height:58px;border-radius:16px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:var(--red);cursor:pointer;box-shadow:var(--shadow);}
+.kw-chip:active{border-color:var(--red);}
+.ai-pick-row{display:flex;gap:8px;padding:10px 18px 0;}
+.vs-bar{display:flex;align-items:center;gap:8px;padding:16px 18px 6px;}
+.vs-player{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.vs-player b{font-size:13px;}
+.vs-score{font-size:22px;font-weight:900;color:var(--red);}
+.vs-mid{font-size:10.5px;color:var(--faint);flex:none;}
+.turn-bar{margin:4px 16px;padding:12px 14px;border-radius:14px;background:var(--red-soft);display:flex;flex-direction:column;gap:6px;}
+.turn-bar b{font-size:14px;color:var(--red);}
+.turn-bar span{font-size:11px;color:var(--sub);}
+.turn-bar.opp{background:var(--green-soft);}
+.turn-bar.opp b{color:var(--green);}
+.timer-track{height:5px;background:rgba(181,55,46,.18);border-radius:3px;overflow:hidden;}
+.timer-fill{height:100%;width:100%;background:var(--red);border-radius:3px;transition:width 1s linear;}
+.opp-thinking{font-size:13px;font-weight:700;color:var(--green);display:flex;gap:8px;align-items:center;}
+.battle-rule{font-size:12px;color:var(--sub);padding:8px 18px 2px;line-height:1.6;}
+.battle-rule b{color:var(--red);}
+.option-list{padding:6px 16px 0;}
+.mode-card.opt .opt-tag{flex:none;font-size:10px;color:var(--green);background:var(--green-soft);border-radius:8px;padding:3px 8px;font-weight:700;}
+.mode-card.opt .opt-tag.warn{color:#b5372e;background:var(--red-soft);}
+.result-box{margin:16px;padding:26px 20px;background:var(--card);border-radius:20px;box-shadow:var(--shadow);text-align:center;}
+.result-box.win{border:1px solid rgba(44,110,99,.4);}
+.result-box.lose{border:1px solid rgba(181,55,46,.35);}
+.result-title{font-size:26px;font-weight:900;margin-bottom:8px;}
+.result-box.win .result-title{color:var(--green);}
+.result-box.lose .result-title{color:var(--red);}
+.result-score{font-size:16px;font-weight:700;margin-bottom:6px;}
+.result-msg{font-size:12.5px;color:var(--sub);line-height:1.6;}
+/* 炸弹失败动画 */
+.boom-overlay{position:absolute;inset:0;z-index:90;pointer-events:none;opacity:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.boom-overlay.show{opacity:1;animation:shake .45s ease;}
+.boom-ink{width:0;height:0;border-radius:50%;background:radial-gradient(circle,#d8493f 0%,#7a2320 55%,transparent 72%);}
+.boom-overlay.show .boom-ink{animation:ink .9s ease-out forwards;}
+.boom-overlay.show .boom-text{animation:inktext .9s ease-out forwards;}
+.boom-text{font-size:56px;font-weight:900;color:#7a2320;opacity:0;text-shadow:0 2px 18px rgba(216,73,63,.4);}
+.boom-overlay.win .boom-ink{background:radial-gradient(circle,#3d8a75 0%,#2c6e63 55%,transparent 72%);}
+.boom-overlay.win .boom-text{color:#2c6e63;}
+@keyframes ink{0%{width:0;height:0;opacity:.95}70%{opacity:.9}100%{width:620px;height:620px;opacity:0}}
+@keyframes inktext{0%,55%{opacity:0}70%{opacity:1}100%{opacity:0}}
+@keyframes shake{0%,100%{transform:translate(0)}25%{transform:translate(-4px,2px)}50%{transform:translate(4px,-2px)}75%{transform:translate(-3px,-2px)}}
+/* 技能卡槽 */
+.battle-cards{display:flex;gap:9px;flex-wrap:wrap;}
+.card-slot{flex:1;min-width:104px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;box-shadow:var(--shadow);}
+.card-slot .cs-emoji{font-size:19px;}
+.card-slot b{font-size:12px;}
+.card-slot span{font-size:9.5px;color:var(--sub);}
+/* 战报卡片 */
+.rep-songs{margin:10px 0 4px;text-align:left;}
+.rep-row{display:flex;gap:8px;font-size:11.5px;color:#5d5040;padding:4px 8px;background:rgba(255,255,255,.55);border-radius:8px;margin-bottom:5px;}
+.rep-row span{font-weight:900;color:var(--red);}
+/* 社群 */
+.gm-list{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:6px 0 2px;}
+.gm{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;}
+.gm span{font-size:10.5px;color:var(--sub);}
+.gm.more{justify-content:center;font-size:11px;color:var(--faint);width:34px;height:34px;border-radius:50%;border:1px dashed var(--line);}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="phone">
+  <!-- ============ 视图：首页 ============ -->
+  <section class="view active" id="view-home">
+    <header class="topbar">
+      <h1 class="serif">飞花音</h1>
+      <button class="icon-btn" onclick="openSearch()" aria-label="搜索">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+      </button>
+      <div class="avatar">你</div>
+    </header>
+    <div class="scroll">
+      <div class="hello">
+        <div class="hi">晚上好，今天想接哪一局？<span style="color:var(--green);font-weight:700"> · MVP 交互版 v3</span></div>
+        <h2 class="serif">以歌为令，以字会友</h2>
+      </div>
+      <div class="ai-note">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" style="flex:none;margin-top:1px"><path d="M12 3a4 4 0 0 0-4 4v1H7a3 3 0 0 0-3 3v3a3 3 0 0 0 3 3h1v1a4 4 0 0 0 8 0v-1h1a3 3 0 0 0 3-3v-3a3 3 0 0 0-3-3h-1V7a4 4 0 0 0-4-4Z"/><circle cx="9" cy="13" r="1.2" fill="var(--green)" stroke="none"/><circle cx="15" cy="13" r="1.2" fill="var(--green)" stroke="none"/></svg>
+        <div><b>AI 为你推荐：</b>你常听华语抒情歌，「月」「雨」字局里有大量你熟悉的歌，目前胜率预测较高，快去接一句。</div>
+      </div>
+
+      <div class="battle-banner" onclick="startBattle()">
+        <div class="bb-txt"><b>⚡ 实时对战</b><span>接力赛 · 炸弹歌 · 反向禁字 · AI 出题</span></div>
+        <div class="bb-go">开一局 ›</div>
+      </div>
+
+      <div class="filter-bar" id="filter-bar"></div>
+
+      <div class="today" onclick="goRoom('yue')">
+        <div class="big serif">月</div>
+        <div class="lab">今日飞花令</div>
+        <div class="word serif">月</div>
+        <p>唱任意一句带「月」字的歌词，不用同时在线，24 小时内接上即可。</p>
+        <button class="go" onclick="event.stopPropagation();goRoom('yue')">立即接一句
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
+      </div>
+
+      <div class="section-h"><h3>为你推荐的字房间</h3><span>按今日参与人数排行</span></div>
+      <div class="room-list" id="room-list"></div>
+    </div>
+    <button class="fab" onclick="openCreateModal()" aria-label="创建房间">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+  </section>
+
+  <!-- ============ 视图：字房间（动态渲染） ============ -->
+  <section class="view" id="view-room">
+    <header class="topbar room-top">
+      <button class="icon-btn" onclick="goHome()" aria-label="返回">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+      </button>
+      <h1 class="serif" id="room-title"></h1>
+      <button class="icon-btn" id="btn-room-set" onclick="openRoomSet()" aria-label="更多">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+      </button>
+    </header>
+
+    <div class="scroll">
+      <div class="bgboard" id="bgboard"></div>
+      <div class="rulebar" id="rulebar"></div>
+      <div class="playlist-bar" onclick="toast('房间共享歌单：本房所有人接对的歌都在这里')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.9" stroke-linecap="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
+        <div class="txt" id="playlist-txt"></div>
+        <span class="arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></span>
+      </div>
+      <div class="feed" id="feed"></div>
+    </div>
+
+    <div class="recbar">
+      <div class="rec-hint" id="rec-hint"></div>
+      <button class="rec-btn" id="recBtn" onclick="toggleRec()" aria-label="录音">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </button>
+    </div>
+    <div class="rec-timer" id="rec-timer"></div>
+  </section>
+
+  <!-- ============ 视图：战绩 ============ -->
+  <section class="view" id="view-records">
+    <header class="topbar">
+      <h1 class="serif">我的战绩</h1>
+      <button class="icon-btn" onclick="toast('战绩数据随接歌实时更新')" aria-label="说明">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+      </button>
+    </header>
+    <div class="scroll" id="records-body"></div>
+  </section>
+
+  <!-- ============ 视图：我的 ============ -->
+  <section class="view" id="view-me">
+    <header class="topbar">
+      <h1 class="serif">我的</h1>
+      <button class="icon-btn" onclick="goSettings()" aria-label="设置">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h.01a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
+      </button>
+    </header>
+    <div class="scroll" id="me-body"></div>
+  </section>
+
+  <!-- ============ 视图：实时对战 ============ -->
+  <section class="view" id="view-battle">
+    <header class="topbar">
+      <button class="icon-btn" onclick="exitBattle()" aria-label="返回">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+      </button>
+      <h1 class="serif">实时对战</h1>
+    </header>
+    <div class="scroll" id="battle-body"></div>
+  </section>
+
+  <!-- ===== 炸弹失败动画层 ===== -->
+  <div class="boom-overlay" id="boomOverlay">
+    <div class="boom-ink"></div>
+    <div class="boom-text serif">炸 了</div>
+  </div>
+
+  <!-- ===== 本局战报弹层 ===== -->
+  <div class="modal" id="reportModal" onclick="if(event.target===this)closeReport()">
+    <div class="modal-card">
+      <h3 class="serif">本局战报</h3>
+      <div class="msub">飞花令精彩集锦 · 长按截图分享</div>
+      <div id="report-body"></div>
+      <div class="modal-btns"><button class="cancel" onclick="closeReport()">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- ===== 歌友社群弹层 ===== -->
+  <div class="modal" id="groupModal" onclick="if(event.target===this)closeGroup()">
+    <div class="modal-card">
+      <h3 class="serif" id="group-title">歌友社群</h3>
+      <div class="msub" id="group-sub"></div>
+      <div id="group-body"></div>
+      <div class="modal-btns"><button class="cancel" onclick="closeGroup()">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- ===== 底部导航（全局） ===== -->
+  <nav class="tabbar">
+    <button class="tab on" id="tab-home" onclick="goHome()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1Z"/></svg>
+      首页</button>
+    <button class="tab" id="tab-records" onclick="goRecords()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg>
+      战绩</button>
+    <button class="tab" id="tab-me" onclick="goMe()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+      我的</button>
+  </nav>
+
+  <!-- ===== 一起听弹层 ===== -->
+  <div class="overlay" id="playerOverlay" onclick="if(event.target===this)closePlayer()">
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="player">
+        <div class="disc-wrap">
+          <div class="arm" id="arm"><div class="pivot"></div><div class="bar"></div><div class="tip"></div></div>
+          <div class="disc" id="disc"><div class="hole serif" id="discWord">月</div></div>
+        </div>
+        <div class="pname" id="pName"></div>
+        <div class="partist" id="pArtist"></div>
+        <div class="ai-tag">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a4 4 0 0 0-4 4v1H7a3 3 0 0 0-3 3v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-3a3 3 0 0 0-3-3h-1V7a4 4 0 0 0-4-4Z"/></svg>
+          <span id="ai-tag-txt">AI 已识别该歌词出自这首原唱</span>
+        </div>
+        <div class="p-story" id="pStory"></div>
+        <div class="prog">
+          <div class="track" onclick="toast('进度拖动示意')"><div class="fill"></div><div class="knob"></div></div>
+          <div class="times"><span id="curTime">1:08</span><span id="totTime">3:24</span></div>
+        </div>
+        <div class="p-ctrl">
+          <button onclick="toast('上一首示意')" aria-label="上一首">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M7 6v12H5V6Zm12 0v12l-9-6Z"/></svg>
+          </button>
+          <button class="play" id="playBtn" onclick="togglePlay()" aria-label="播放">
+            <svg id="icPlay" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5Z"/></svg>
+            <svg id="icPause" width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6.5" y="5" width="3.6" height="14" rx="1"/><rect x="13.9" y="5" width="3.6" height="14" rx="1"/></svg>
+          </button>
+          <button onclick="toast('下一首示意')" aria-label="下一首">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17 6h2v12h-2ZM5 6l9 6-9 6Z"/></svg>
+          </button>
+        </div>
+        <div class="p-lyric" id="pLyric"></div>
+        <div class="p-btns">
+          <button onclick="toast('已加入房间共享歌单')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            加入共享歌单</button>
+          <button class="primary" onclick="toast('跳转 QQ音乐 听完整版示意')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
+            去 QQ音乐 听</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 视图：设置 ============ -->
+  <section class="view" id="view-settings">
+    <header class="topbar">
+      <button class="icon-btn" onclick="goMe()" aria-label="返回">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+      </button>
+      <h1 class="serif">设置</h1>
+    </header>
+    <div class="scroll" id="settings-body"></div>
+  </section>
+
+  <!-- ===== 搜索弹层 ===== -->
+  <div class="modal" id="searchModal" onclick="if(event.target===this)closeSearch()">
+    <div class="modal-card">
+      <h3 class="serif">搜索</h3>
+      <div class="msub">找字房间或歌曲</div>
+      <input id="searchInput" maxlength="20" placeholder="输入字或歌名，如：雨 / 起风了" oninput="searchFilter(this.value)">
+      <div class="sres" id="searchResults"></div>
+      <div class="modal-btns"><button class="cancel" onclick="closeSearch()">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- ===== 称号图鉴弹层 ===== -->
+  <div class="modal" id="titlesModal" onclick="if(event.target===this)closeTitles()">
+    <div class="modal-card">
+      <h3 class="serif">称号图鉴</h3>
+      <div class="msub">接歌得分，解锁称号 · 当前 ${'<span id="titles-cur"></span>'}</div>
+      <div id="titlesList"></div>
+      <div class="modal-btns"><button class="cancel" onclick="closeTitles()">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- ===== 房间设置弹层 ===== -->
+  <div class="modal" id="roomSetModal" onclick="if(event.target===this)closeRoomSet()">
+    <div class="modal-card">
+      <h3 class="serif" id="rset-title">房间设置</h3>
+      <div class="msub" id="rset-sub"></div>
+      <div id="rset-body"></div>
+      <div class="modal-btns"><button class="cancel" onclick="closeRoomSet()">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- ===== 自建房间弹层 ===== -->
+  <div class="modal" id="createModal" onclick="if(event.target===this)closeCreateModal()">
+    <div class="modal-card">
+      <h3 class="serif">创建字房间</h3>
+      <div class="msub">输入一个字（或词），AI 会为你生成专属水墨背景板</div>
+      <input id="createInput" maxlength="4" placeholder="如：爱 / 梦 / 青春" onkeydown="if(event.key==='Enter')createRoom()">
+      <div class="hint">房间永久开放，好友随时进来接歌</div>
+      <div class="modal-btns">
+        <button class="cancel" onclick="closeCreateModal()">取消</button>
+        <button class="ok" onclick="createRoom()">开局</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- toast -->
+  <div class="toast" id="toast"></div>
+</div>
+<div id="autotest-report" style="position:fixed;top:0;left:0;right:0;background:#000;color:#0f0;font:12px monospace;z-index:9999;white-space:pre-wrap;padding:8px"></div>
+
+<script>
+/* ============================================================
+   飞花音 · 数据层（初赛 Demo 用模拟数据演示完整闭环）
+   ============================================================ */
+const SONG_POOL = {
+  // 「月」字局
+  y1:{name:'月亮代表我的心',artist:'邓丽君',cur:'1:08',tot:'3:24',lyric:'你问我爱你有多深，<span class="hl">月亮代表我的心</span>',story:'1973 年陈芬兰首唱，邓丽君翻唱后成为华人世界最熟悉的旋律之一'},
+  y2:{name:'城里的月光',artist:'许美静',cur:'0:42',tot:'4:12',lyric:'城里的<em style="color:var(--red);font-style:normal;font-weight:700">月</em>光把梦照亮，<span class="hl">请温暖他心房</span>',story:'许美静 1996 年代表作，新加坡音乐人陈佳明为她量身打造'},
+  y3:{name:'月半小夜曲',artist:'李克勤',cur:'1:20',tot:'4:49',lyric:'仍然在听<span class="hl">月半小夜曲</span>',story:'改编自日本歌手河合奈保子的《Half Moon Serenade》'},
+  y4:{name:'但愿人长久',artist:'王菲',cur:'0:55',tot:'4:09',lyric:'明<span class="hl">月</span>几时有，<span class="hl">把酒问青天</span>',story:'苏轼《水调歌头》作词、梁弘志谱曲，邓丽君原唱、王菲翻唱'},
+  // 「雨」字局
+  r1:{name:'听见下雨的声音',artist:'周杰伦',cur:'0:33',tot:'4:07',lyric:'而我听见<em style="color:var(--red);font-style:normal;font-weight:700">雨</em>的声音，<span class="hl">想起你用唇语说爱情</span>',story:'周杰伦、方文山 2013 年为同名电影创作的主题曲'},
+  r2:{name:'下雨天',artist:'南拳妈妈',cur:'0:21',tot:'4:22',lyric:'<em style="color:var(--red);font-style:normal;font-weight:700">雨</em>天了怎么办，<span class="hl">我好想你</span>',story:'南拳妈妈 Lara 主唱，2008 年雨天 KTV 必点曲目'},
+  r3:{name:'雨爱',artist:'杨丞琳',cur:'0:48',tot:'4:05',lyric:'<em style="color:var(--red);font-style:normal;font-weight:700">雨</em>爱的秘密，<span class="hl">能一直延续</span>',story:'杨丞琳 2010 年代表作，电视剧《海派甜心》片尾曲'},
+  // 「风」字局
+  f1:{name:'起风了',artist:'买辣椒也用券',cur:'0:58',tot:'5:23',lyric:'晚<em style="color:var(--red);font-style:normal;font-weight:700">风</em>吹起你鬓间的白发，<span class="hl">抚平回忆留下的疤</span>',story:'翻唱自高桥优《ヤキモチ》，买辣椒也用券填词后全网爆红'},
+  f2:{name:'夏天的风',artist:'温岚',cur:'0:36',tot:'4:01',lyric:'夏天的<em style="color:var(--red);font-style:normal;font-weight:700">风</em>我永远记得，<span class="hl">清清楚楚地说你爱我</span>',story:'周杰伦作曲、温岚演唱，2004 年的夏日标配'},
+  f3:{name:'东风破',artist:'周杰伦',cur:'1:02',tot:'5:13',lyric:'谁在用琵琶弹奏一曲<em style="color:var(--red);font-style:normal;font-weight:700">东风</em>破，<span class="hl">岁月在墙上剥落看见小时候</span>',story:'周杰伦 2003 年作品，公认华语"中国风"的开山之作'},
+  // 「夜」字局
+  ye1:{name:'夜曲',artist:'周杰伦',cur:'0:40',tot:'3:46',lyric:'为你弹奏肖邦的<span class="hl">夜曲</span>，<span class="hl">纪念我死去的爱情</span>',story:'周杰伦 2005 年专辑《十一月的萧邦》主打歌'},
+  ye2:{name:'夜空中最亮的星',artist:'逃跑计划',cur:'1:12',tot:'4:12',lyric:'<span class="hl">夜空中最亮的星</span>，<span class="hl">能否听清</span>',story:'逃跑计划 2011 年作品，校园夜晚的常驻 BGM'},
+  ye3:{name:'白天不懂夜的黑',artist:'那英',cur:'0:52',tot:'4:14',lyric:'你永远不懂我伤悲，<span class="hl">像白天不懂夜的黑</span>',story:'那英 1995 年代表作，林隆璇词曲'},
+  // 多语言关键词（英语局）
+  e1:{name:'Love Story',artist:'Taylor Swift',cur:'0:30',tot:'3:55',lyric:"It's a <span class=\"hl\">love</span> story, baby, just say yes",story:'Taylor Swift 2008 年成名曲，用罗密欧与朱丽叶改写了一个圆满结局'},
+  e2:{name:'Yesterday',artist:'The Beatles',cur:'0:15',tot:'2:05',lyric:'Now I long for yesterday, <span class="hl">love</span> was such an easy game to play',story:'披头士 1965 年作品，历史上被翻唱次数最多的歌之一'},
+  e3:{name:'My Heart Will Go On',artist:'Céline Dion',cur:'0:50',tot:'4:40',lyric:'<span class="hl">Love</span> can touch us one time and last for a lifetime',story:'电影《泰坦尼克号》主题曲，1997 年响彻全世界'},
+};
+// 歌词文本（判定关键字用）
+function lyricText(sid){ const s=SONG_POOL[sid]; return s? s.lyric.replace(/<[^>]+>/g,'') : ''; }
+function songMatch(sid, kw){ return lyricText(sid).toLowerCase().includes(kw.toLowerCase()); }
+
+const ROOMS = {
+  yue:{
+    word:'月', players:6, unlocked:8, hot:false, custom:false, img:'assets/bg/yue.jpg',
+    genre:'流行', lang:'国语', era:'经典', tags:['情歌','怀旧'],
+    pool:['y1','y2','y3','y4'],
+    cards:[
+      {user:'小红',ac:'#d98a9a',grad:'linear-gradient(135deg,#d98a9a,#b4556b)',time:'2 分钟前',song:'y1',score:'+2 首唱',dur:'0:08',
+       dups:[{user:'阿杰',ac:'#7aa3c9',grad:'linear-gradient(135deg,#7aa3c9,#45709e)',time:'1 分钟前'}],
+       comments:[
+         {user:'小明',ac:'#c9b07a',grad:'linear-gradient(135deg,#c9b07a,#9e8245)',text:'经典开场，一开口就暴露年代了哈哈',likes:3},
+         {user:'小美',ac:'#8fc0a3',grad:'linear-gradient(135deg,#8fc0a3,#4f9271)',text:'我妈最爱这首，全家都会唱'},
+       ], likes:5},
+      {user:'小明',ac:'#c9b07a',grad:'linear-gradient(135deg,#c9b07a,#9e8245)',time:'1 分钟前',song:'y2',score:'+2 首唱',dur:'0:05',
+       dups:[],comments:[],likes:3},
+      {user:'阿杰',ac:'#7aa3c9',grad:'linear-gradient(135deg,#7aa3c9,#45709e)',time:'刚刚',song:'y3',score:'+2 首唱',dur:'0:07',
+       dups:[],comments:[{user:'小美',ac:'#8fc0a3',grad:'linear-gradient(135deg,#8fc0a3,#4f9271)',text:'这首粤语一出来我直接跪，太有味道了'}],likes:4},
+    ]
+  },
+  yu:{
+    word:'雨', players:8, unlocked:12, hot:true, custom:false, img:'assets/bg/yu.jpg',
+    genre:'流行', lang:'国语', era:'10s', tags:['治愈','雨天'],
+    pool:['r1','r2','r3'],
+    cards:[
+      {user:'阿澈',ac:'#7aa3c9',grad:'linear-gradient(135deg,#7aa3c9,#45709e)',time:'5 分钟前',song:'r1',score:'+2 首唱',dur:'0:09',
+       dups:[{user:'小雨',ac:'#8fc0a3',grad:'linear-gradient(135deg,#8fc0a3,#4f9271)',time:'3 分钟前'}],
+       comments:[{user:'十七',ac:'#c9b07a',grad:'linear-gradient(135deg,#c9b07a,#9e8245)',text:'下雨天听这首，谁懂'}],likes:7},
+      {user:'小雨',ac:'#8fc0a3',grad:'linear-gradient(135deg,#8fc0a3,#4f9271)',time:'刚刚',song:'r2',score:'+2 首唱',dur:'0:06',
+       dups:[],comments:[],likes:2},
+    ]
+  },
+  feng:{
+    word:'风', players:5, unlocked:6, hot:false, custom:false, img:'assets/bg/feng.jpg',
+    genre:'民谣', lang:'国语', era:'10s', tags:['青春','夏天'],
+    pool:['f1','f2','f3'],
+    cards:[
+      {user:'十七',ac:'#c9b07a',grad:'linear-gradient(135deg,#c9b07a,#9e8245)',time:'1 小时前',song:'f1',score:'+2 首唱',dur:'0:10',
+       dups:[],comments:[{user:'阿澈',ac:'#7aa3c9',grad:'linear-gradient(135deg,#7aa3c9,#45709e)',text:'副歌一出来鸡皮疙瘩起来了'}],likes:9},
+    ]
+  },
+  ye:{
+    word:'夜', players:12, unlocked:19, hot:true, custom:false, img:'assets/bg/ye.jpg',
+    genre:'流行', lang:'国语', era:'千禧', tags:['深夜','治愈'],
+    pool:['ye1','ye2','ye3'],
+    cards:[
+      {user:'小林',ac:'#d98a9a',grad:'linear-gradient(135deg,#d98a9a,#b4556b)',time:'8 分钟前',song:'ye2',score:'+2 首唱',dur:'0:11',
+       dups:[{user:'星星',ac:'#c9b07a',grad:'linear-gradient(135deg,#c9b07a,#9e8245)',time:'4 分钟前'}],
+       comments:[{user:'十七',ac:'#c9b07a',grad:'linear-gradient(135deg,#c9b07a,#9e8245)',text:'考研人深夜破防专用'}],likes:11},
+      {user:'星星',ac:'#c9b07a',grad:'linear-gradient(135deg,#c9b07a,#9e8245)',time:'刚刚',song:'ye1',score:'+2 首唱',dur:'0:07',
+       dups:[],comments:[],likes:5},
+    ]
+  },
+};
+
+/* ===== 战绩统计（实时累计 + localStorage 持久化） ===== */
+let STATS = JSON.parse(localStorage.getItem('feihua_stats')||'null') || {
+  total:21, songs:9, first:6, dups:3, streak:3, bestStreak:4,
+  rooms:{ yue:{first:3,score:6,dups:0}, ye:{first:2,score:4,dups:0}, yu:{first:1,score:2,dups:0} },
+  cards:['tiaoguo'], cardsEarned:3
+};
+function saveStats(){ localStorage.setItem('feihua_stats', JSON.stringify(STATS)); }
+function bumpStats(roomId, first){
+  const rr = STATS.rooms[roomId] || (STATS.rooms[roomId]={first:0,score:0,dups:0});
+  STATS.songs++;
+  if(first){ STATS.first++; STATS.total+=2; rr.first++; rr.score+=2; STATS.streak++; }
+  else { STATS.dups++; STATS.total+=1; rr.dups++; rr.score+=1; STATS.streak=0; }
+  STATS.bestStreak=Math.max(STATS.bestStreak,STATS.streak);
+  saveStats();
+  maybeEarnCard();
+}
+function levelOf(score){
+  if(score>=60) return {name:'诗仙', next:null, nextName:null};
+  if(score>=30) return {name:'令主', next:60, nextName:'诗仙'};
+  if(score>=10) return {name:'令士', next:30, nextName:'令主'};
+  return {name:'令徒', next:10, nextName:'令士'};
+}
+
+/* ===== 视图路由 ===== */
+function show(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function setTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  const el = document.getElementById('tab-'+name);
+  if(el) el.classList.add('on');
+}
+function goHome(){ closePlayer(); setTab('home'); show('view-home'); }
+function goRecords(){ closePlayer(); setTab('records'); renderRecords(); show('view-records'); }
+function goMe(){ closePlayer(); setTab('me'); renderMe(); show('view-me'); }
+
+/* ===== 战绩页 ===== */
+function renderRecords(){
+  const lv = levelOf(STATS.total);
+  const pct = lv.next ? Math.min(100, Math.round(STATS.total/lv.next*100)) : 100;
+  const roomRows = Object.entries(STATS.rooms).filter(([id])=>ROOMS[id])
+    .sort((a,b)=>b[1].score-a[1].score)
+    .map(([id,rr])=>{
+      const r=ROOMS[id];
+      return `<div class="rstat" onclick="goRoom('${id}')"><div class="zi serif">${r.word}</div>
+        <div class="info"><div class="t">「${r.word}」字局</div><div class="m">首唱 ${rr.first} · 跟唱 ${rr.dups||0} · 接歌 ${rr.first+(rr.dups||0)} 首</div></div>
+        <div class="sc">${rr.score} 分</div></div>`;
+    }).join('');
+  document.getElementById('records-body').innerHTML = `
+    <div class="level-banner" style="cursor:pointer" onclick="openTitles()">
+      <div class="zi2 serif">${lv.name[0]}</div>
+      <div class="lv"><b>${lv.name} · ${STATS.total} 分</b>
+        <div class="pbar"><i style="width:${pct}%"></i></div>
+        <div class="pl">${lv.next ? ('距「'+lv.nextName+'」还差 '+(lv.next-STATS.total)+' 分') : '已是最高的称号'} · 连对纪录 ${STATS.bestStreak} 首</div>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="v">${STATS.total}</div><div class="l">总得分</div></div>
+      <div class="stat-card"><div class="v">${STATS.songs}</div><div class="l">接歌数</div></div>
+      <div class="stat-card"><div class="v">${STATS.first}</div><div class="l">首唱</div></div>
+      <div class="stat-card"><div class="v">${STATS.dups}</div><div class="l">跟唱</div></div>
+      <div class="stat-card"><div class="v">${STATS.bestStreak}</div><div class="l">连对纪录</div></div>
+      <div class="stat-card"><div class="v">${Object.keys(STATS.rooms).length}</div><div class="l">参与房间</div></div>
+    </div>
+    <div class="section-h"><h3>房间战绩</h3><span>点击进入该房间</span></div>
+    <div class="room-stats">${roomRows || '<p class="muted" style="padding:10px 4px;font-size:12px">还没有战绩，去接一句吧</p>'}</div>
+    <div class="section-h"><h3>AI 战绩海报</h3><span>突出最高数据维度</span></div>
+    <div class="poster-wrap"><div class="poster">
+      <div class="pz serif">飞</div>
+      <div class="pt">飞花音 · 个人战绩</div>
+      <div class="pv serif">${STATS.total} 分</div>
+      <div class="pl2">${lv.name} · 接歌 ${STATS.songs} 首 · 首唱 ${STATS.first} 首 · 连对 ${STATS.bestStreak} 首</div>
+      <div class="qr">▦▦▦<br>▦&nbsp;▦<br>▦▦▦</div>
+      <div class="pfoot">扫码加入我的常玩房间 · 长按海报截图分享</div>
+    </div></div>
+    <p style="text-align:center;padding:12px 0 6px"><button class="listen" onclick="toast('长按海报截图即可分享到微信（演示版）')">📤 分享战绩海报</button></p>`;
+}
+
+/* ===== 我的页 ===== */
+function renderMe(){
+  const lv = levelOf(STATS.total);
+  const songs = Object.entries(ROOMS).filter(([,r])=>!r.custom)
+    .flatMap(([id,r])=>r.pool.slice(0,3).map(sid=>({sid, word:ROOMS[id].word})))
+    .slice(0,6);
+  const recent = Object.keys(STATS.rooms).filter(id=>ROOMS[id]).slice(-3).reverse();
+  document.getElementById('me-body').innerHTML = `
+    <div class="me-head">
+      <div class="avatar">${PROFILE.nick[0]}</div>
+      <div class="info"><b>${PROFILE.nick}</b><div class="sub2">${PROFILE.sign} · 加入飞花音 3 天</div><span class="lv-chip">${lv.name}</span></div>
+    </div>
+    <div class="stat-grid" style="margin-top:14px">
+      <div class="stat-card"><div class="v">${STATS.total}</div><div class="l">总得分</div></div>
+      <div class="stat-card"><div class="v">${STATS.songs}</div><div class="l">接歌数</div></div>
+      <div class="stat-card"><div class="v">${STATS.bestStreak}</div><div class="l">连对纪录</div></div>
+    </div>
+    <div class="section-h"><h3>称号系统</h3><span></span></div>
+    <div class="set-row" style="margin:0 16px 4px" onclick="openTitles()"><div class="sl">🏅 称号图鉴</div><div class="sv">${lv.name} · ${STATS.total} 分 ›</div></div>
+    <div class="section-h"><h3>我的共享歌单</h3><span>接对的歌都在这里</span></div>
+    <div class="song-list">
+      ${songs.map((s,i)=>{ const so=SONG_POOL[s.sid];
+        return `<div class="srow" onclick="openPlayer('${s.sid}')">
+          <div class="no">${i+1}</div>
+          <div class="info"><div class="t">${so.name}</div><div class="m">${so.artist}</div></div>
+          <span class="tag">${s.word}局</span></div>`;}).join('')}
+    </div>
+    <div class="section-h"><h3>技能卡背包</h3><span>累计 3 次通过获得一张</span></div>
+    <div class="battle-cards" style="padding:0 16px">${renderCardSlots()}</div>
+    <div class="section-h"><h3>歌友社群</h3><span>双击头像加好友</span></div>
+    <div class="room-stats">
+      ${GROUPS.map(g=>`<div class="rstat" onclick="openGroup('${g.id}')"><div class="zi g serif" style="font-size:17px">${g.tag[0]}</div>
+        <div class="info"><div class="t">${g.name}</div><div class="m">${g.members} 人 · ${g.desc}</div></div>
+        <div class="sc" style="font-size:12px;color:var(--sub)">›</div></div>`).join('')}
+    </div>
+    <div class="section-h"><h3>最近参与</h3><span>点击进入</span></div>
+    <div class="room-stats">
+      ${recent.map(id=>{ const r=ROOMS[id];
+        return `<div class="rstat" onclick="goRoom('${id}')"><div class="zi serif">${r.word}</div>
+          <div class="info"><div class="t">「${r.word}」字局</div><div class="m">${r.players} 人在玩 · 已解锁 ${r.unlocked} 首</div></div>
+          <div class="sc">›</div></div>`;}).join('') || '<p style="padding:10px 4px;font-size:12px;color:var(--sub)">还没有参与过房间</p>'}
+    </div>`;
+}
+
+let curRoom = null;
+
+/* ===== 首页渲染（按参与人数排行 + 多维筛选） ===== */
+function renderHome(){
+  const list = document.getElementById('room-list');
+  renderFilter();
+  const sorted = Object.entries(ROOMS).filter(([id,r])=>{
+    if(FILTERS.genre && r.genre!==FILTERS.genre) return false;
+    if(FILTERS.lang && r.lang!==FILTERS.lang) return false;
+    if(FILTERS.era && r.era!==FILTERS.era) return false;
+    return true;
+  }).sort((a,b)=>b[1].players-a[1].players);
+  if(!sorted.length){ list.innerHTML = '<p class="sres-empty" style="padding:24px 0">没有符合条件的房间，换个筛选或自建一个吧</p>'; return; }
+  list.innerHTML = sorted.map(([id,r],i)=>{
+    const rank = i<3 ? `<span class="rank-badge rank-${i+1}">${i+1}</span>` : '';
+    const ziCls = r.custom ? 'zi g' : (i%2 ? 'zi g' : 'zi');
+    const rr = STATS.rooms[id];
+    const mine = rr && rr.first>0 ? `接对 ${rr.first} 首` : '未参与';
+    return `<div class="room-card" onclick="goRoom('${id}')">
+      ${rank}
+      <div class="${ziCls} serif">${r.word}</div>
+      <div class="info"><div class="t">「${r.word}」字局${r.hot?' · 热门':''}${r.custom?' · 自建':''}</div>
+        <div class="m"><span class="pill">${r.players} 人在玩</span><span class="pill">已解锁 ${r.unlocked} 首</span><span class="pill">进行中</span></div></div>
+      <div class="mine">${mine}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== 房间页渲染 ===== */
+function renderRoom(id){
+  curRoom = id;
+  const r = ROOMS[id];
+  // 标题
+  document.getElementById('room-title').innerHTML = `「${r.word}」字局<div class="sub">${r.players} 人 · 异步进行中 · 已解锁 ${r.unlocked} 首</div>`;
+  // AI 意境背景板
+  const board = document.getElementById('bgboard');
+  if (r.custom && !r.generated) {
+    // 自建房间：AI 文生图 2.6 秒后完成，生成专属水墨背景
+    board.className = 'bgboard custom';
+    board.innerHTML = `<div class="bz serif">${r.word}</div>
+      <div class="gen"><span class="spark">✨</span><span>AI 正在为你生成「${r.word}」的水墨背景板…</span></div>
+      <div class="ai-badge"><b>AI 画师</b> · 文生图</div>`;
+    setTimeout(()=>{
+      if(curRoom===id && !r.generated){
+        r.generated = true;
+        const b = document.getElementById('bgboard');
+        if(b && b.classList.contains('custom')){
+          b.className = 'bgboard';
+          b.innerHTML = customBgHTML(r);
+        }
+      }
+    }, 2600);
+  } else if (r.custom && r.generated) {
+    board.className = 'bgboard';
+    board.innerHTML = customBgHTML(r);
+  } else {
+    board.className = 'bgboard';
+    board.innerHTML = `<img src="${r.img}" alt="「${r.word}」字房间意境背景板">
+      <div class="wash"></div>
+      <div class="bz serif">${r.word}</div>
+      <div class="ai-badge"><b>AI 画师</b> · 文生图 · 「${r.word}」意境</div>`;
+  }
+  // 规则
+  document.getElementById('rulebar').innerHTML =
+    `规则：唱任意一句带 <span class="k">「${r.word}」</span> 字的歌词即可，无需同时在线，<span class="k">花传到你后 24 小时内</span>接上；相同歌词会自动归并到第一位，首唱 2 分、跟唱 1 分。`;
+  // 共享歌单
+  document.getElementById('playlist-txt').innerHTML = `房间共享歌单 · 本房已解锁 <b>${r.unlocked} 首歌</b>，可一起听`;
+  // 主链
+  document.getElementById('feed').innerHTML = r.cards.length ? r.cards.map((c,i)=>cardHTML(c,i)).join('') :
+    `<div class="empty-room"><div class="big-zi serif">${r.word}</div>房间刚开，花传到你——<br>唱第一句带「${r.word}」的歌词吧
+      <div class="cmt-row" style="padding:14px 16px 0"><input class="cmt-input" id="first-post" placeholder="也可以先留一句文字发言…" maxlength="60"><button class="cmt-send" onclick="postFirstText()">发送</button></div>
+    </div>`;
+  // 录音提示
+  document.getElementById('rec-hint').innerHTML = `🎙 点红色按钮开唱：一句带 <b>「${r.word}」</b> 的歌词即可，AI 自动识别判分`;
+  show('view-room');
+  // 首次进房玩法引导（每次会话仅一次）
+  if(!sessionStorage.getItem('feihua_guide')){
+    sessionStorage.setItem('feihua_guide','1');
+    setTimeout(()=>toast('🎙 玩法：点底部红色按钮，唱一句带「'+r.word+'」的歌词，AI 判官自动计分'), 700);
+  }
+}
+
+/* 自建房间背景板：按字生成专属水墨配色（AI 文生图演示） */
+function customBgHTML(r){
+  const h = [...r.word].reduce((a,c)=>a+c.charCodeAt(0),0) % 360;
+  const h2 = (h+80)%360;
+  return `<div style="position:absolute;inset:0;background:linear-gradient(150deg,hsl(${h},38%,92%),hsl(${h2},45%,82%) 60%,hsl(${h},32%,74%))"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.55),transparent 55%),radial-gradient(ellipse at 75% 80%,rgba(60,50,40,.14),transparent 60%)"></div>
+    <div class="wash"></div>
+    <div class="bz serif">${r.word}</div>
+    <div class="ai-badge"><b>AI 画师</b> · 已生成 · 「${r.word}」意境</div>`;
+}
+
+/* ===== 房间设置 ===== */
+function openRoomSet(){
+  const r = ROOMS[curRoom]; if(!r) return;
+  document.getElementById('rset-title').textContent = '「'+r.word+'」字局 · 设置';
+  document.getElementById('rset-sub').textContent = r.players+' 人在玩 · 已解锁 '+r.unlocked+' 首 · '+(r.custom?'自建房间（房主）':'官方房间');
+  const songs = r.pool.map(sid=>({sid, s:SONG_POOL[sid]})).filter(x=>x.s);
+  document.getElementById('rset-body').innerHTML = `
+    <div class="set-row"><div class="sl">📖 玩法模式</div><div class="sv">异步接力（当前）</div></div>
+    <div class="set-row" onclick="toast('实时对战 · 敬请期待（V2 上线）')"><div class="sl">⚡ 实时对战</div><div class="sv">敬请期待</div></div>
+    <div class="set-row" onclick="toast('炸弹歌对决 · 敬请期待（V2 上线）')"><div class="sl">💣 炸弹歌对决</div><div class="sv">敬请期待</div></div>
+    <div class="set-row" onclick="toast('反向禁字局 · 敬请期待（V2 上线）')"><div class="sl">🚫 反向禁字局</div><div class="sv">敬请期待</div></div>
+    <div class="set-row" onclick="closeRoomSet();startBattle()"><div class="sl">⚡ 拉上好友实时对战</div><div class="sv">接力 / 炸弹歌 / 禁字局 ›</div></div>
+    <div class="set-row" onclick="openReport()"><div class="sl">📤 分享本局战报</div><div class="sv">截图分享 ›</div></div>
+    <div class="section-h"><h3>本房曲库（${songs.length} 首）</h3><span>点击试听</span></div>
+    <div class="sres" style="max-height:220px">${songs.map(x=>`<div class="sres-item" onclick="openPlayer('${x.sid}');closeRoomSet()">
+      <div class="zi g serif">${r.word}</div>
+      <div class="info"><div class="t">${x.s.name}</div><div class="m">${x.s.artist}</div></div></div>`).join('') || '<div class="sres-empty">本房曲库暂未收录（自建房）</div>'}</div>
+    ${r.custom?`<div class="set-row" style="margin-top:12px" onclick="deleteRoom()"><div class="sl" style="color:var(--red)">🗑 删除这个房间</div><div class="sv">仅限房主</div></div>`:''}
+    <div class="set-row" style="margin-top:${r.custom?'4px':'12px'}" onclick="closeRoomSet();goHome()"><div class="sl">🚪 离开房间</div><div class="sv">›</div></div>`;
+  document.getElementById('roomSetModal').classList.add('open');
+}
+function closeRoomSet(){ document.getElementById('roomSetModal').classList.remove('open'); }
+function deleteRoom(){
+  const r = ROOMS[curRoom];
+  if(!r) return;
+  if(!confirm('确定删除「'+r.word+'」字局？')) return;
+  delete ROOMS[curRoom];
+  closeRoomSet();
+  renderHome();
+  goHome();
+  toast('房间已删除');
+}
+
+/* ============================================================
+   技能卡系统：打出来，不是抽出来（累计 3 次通过获得一张）
+   ============================================================ */
+const CARDS = {
+  jinqu:{name:'禁句卡', emoji:'🚫', desc:'指定一首歌，本轮谁都不能唱'},
+  qiujiu:{name:'求救卡', emoji:'🆘', desc:'接不上可指定一名队友帮唱'},
+  tiaoguo:{name:'跳过卡', emoji:'⏭', desc:'跳过这一轮，扣 1 分'},
+  shuangbei:{name:'双倍卡', emoji:'✖️2', desc:'本轮得分翻倍'},
+  fanzhuan:{name:'反转卡', emoji:'🔄', desc:'指定下一个接令的人'},
+};
+function maybeEarnCard(){
+  const earned = Math.floor(STATS.songs / 3);
+  while(STATS.cardsEarned < earned){
+    const ids = Object.keys(CARDS);
+    const id = ids[Math.floor(Math.random()*ids.length)];
+    STATS.cards.push(id);
+    STATS.cardsEarned++;
+    toast('🎴 累计通过 3 首，获得技能卡「'+CARDS[id].name+'」！');
+  }
+}
+function useCard(id){
+  const idx = STATS.cards.indexOf(id);
+  if(idx<0){ toast('没有这张卡'); return false; }
+  STATS.cards.splice(idx,1);
+  saveStats();
+  return true;
+}
+
+/* ===== 双击头像加好友 ===== */
+function dblAdd(user){
+  toast('已向 '+user+' 发送好友申请（演示）');
+}
+
+/* ============================================================
+   多维筛选（05 章：关键字/曲风/语种/年代/玩法模式/自定义标签）
+   ============================================================ */
+let FILTERS = { genre:null, lang:null, era:null };
+const FILTER_DEFS = { genre:{label:'曲风',opts:['流行','民谣']}, lang:{label:'语种',opts:['国语','英语']}, era:{label:'年代',opts:['经典','千禧','10s']} };
+function cycleFilter(key){
+  const def = FILTER_DEFS[key];
+  const cur = FILTERS[key];
+  const idx = cur ? def.opts.indexOf(cur)+1 : 0;
+  FILTERS[key] = idx >= def.opts.length ? null : def.opts[idx];
+  renderHome();
+}
+function resetFilter(){ FILTERS = { genre:null, lang:null, era:null }; renderHome(); }
+function renderFilter(){
+  const active = Object.values(FILTERS).some(v=>v);
+  document.getElementById('filter-bar').innerHTML = Object.keys(FILTER_DEFS).map(k=>{
+    const d = FILTER_DEFS[k];
+    return `<div class="fchip ${FILTERS[k]?'on':''}" onclick="cycleFilter('${k}')">${d.label}${FILTERS[k]?'：'+FILTERS[k]:''}</div>`;
+  }).join('') + `<div class="fchip ${active?'':'dim'}" onclick="resetFilter()">${active?'✕ 清除':'筛选'}</div>`;
+}
+
+/* ============================================================
+   实时对战引擎（06 章：接力赛/炸弹歌/反向禁字/AI出题/多语言）
+   ============================================================ */
+const BATTLE_MODES = [
+  {id:'relay',   name:'标准接力赛', icon:'🎤', desc:'轮流唱含关键字的歌词，8 秒接不上就输'},
+  {id:'bomb',    name:'炸弹歌对决', icon:'💣', desc:'各设一首炸弹歌，唱出对方的炸弹立刻引爆'},
+  {id:'reverse', name:'反向禁字局', icon:'🚫', desc:'禁字不能唱，谁踩雷谁炸'},
+  {id:'aiq',     name:'AI 出题局', icon:'🤖', desc:'AI 出题官随机出关键字，接得住就是赢'},
+];
+const BATTLE_KWS = ['月','雨','风','夜','love'];
+const BATTLE = { mode:null, kw:null, myBomb:null, oppBomb:null, round:0, myScore:0, oppScore:0, myDouble:false, opp:{name:'阿杰', avatar:'杰', color:'linear-gradient(135deg,#7aa3c9,#45709e)'} };
+
+function startBattle(){ closePlayer(); setTab('home'); show('view-battle'); renderBattleMode(); }
+function exitBattle(){ clearBattleTimers(); show('view-home'); }
+function clearBattleTimers(){ clearInterval(BATTLE.timer); clearTimeout(BATTLE.timer2); clearTimeout(BATTLE.boomTimer); }
+
+function renderBattleMode(){
+  document.getElementById('battle-body').innerHTML = `
+    <div class="battle-hint">选一个模式，和 ${BATTLE.opp.name} 开一局 · 多语言关键字可选 love</div>
+    ${BATTLE_MODES.map(m=>`<div class="mode-card" onclick="pickBattleKw('${m.id}')">
+      <div class="mode-icon">${m.icon}</div>
+      <div class="mode-info"><b>${m.name}</b><span>${m.desc}</span></div>
+      <div class="mode-go">›</div>
+    </div>`).join('')}
+    <div class="section-h"><h3>我的技能卡</h3><span>累计 3 次通过获得</span></div>
+    <div class="battle-cards" id="battle-cards">${renderCardSlots()}</div>`;
+}
+function renderCardSlots(){
+  if(!STATS.cards.length) return '<p class="sres-empty">暂无技能卡，去字房间接歌赚卡吧</p>';
+  const count = {};
+  STATS.cards.forEach(id=>count[id]=(count[id]||0)+1);
+  return Object.keys(count).map(id=>{
+    const c = CARDS[id];
+    const usable = id==='shuangbei' || id==='tiaoguo';
+    return `<div class="card-slot" onclick="${usable?`useCardInBattle('${id}')`:`toast('${c.name}：${c.desc}（对战版暂支持双倍/跳过卡）')`}">
+      <div class="cs-emoji">${c.emoji}</div><b>${c.name}</b><span>×${count[id]} ${usable?'· 可用':'· 异步房用'}</span></div>`;
+  }).join('');
+}
+function useCardInBattle(id){
+  const c = CARDS[id];
+  if(id==='shuangbei'){ if(useCard(id)){ BATTLE.myDouble = true; toast('双倍卡已使用：下一得分翻倍！'); renderBattleTurn(); } }
+  else if(id==='tiaoguo'){ if(useCard(id)){ toast('跳过卡：本轮跳过，对方 +1 分'); BATTLE.oppScore++; mySkip(); } }
+}
+function pickBattleKw(mode){
+  BATTLE.mode = mode;
+  document.getElementById('battle-body').innerHTML = `
+    <div class="battle-hint">${BATTLE_MODES.find(m=>m.id===mode).icon} ${BATTLE_MODES.find(m=>m.id===mode).name} · 选择关键字（多语言支持 love）</div>
+    <div class="kw-grid">${BATTLE_KWS.map(k=>`<div class="kw-chip" onclick="setupBattle('${k}')">${k}</div>`).join('')}</div>
+    ${mode==='aiq'?`<div class="ai-pick-row"><button class="listen" onclick="aiPickKw()">🤖 让 AI 出题官随机出题</button></div>`:''}
+    <div class="ai-pick-row"><input class="cmt-input" id="custom-kw" placeholder="自定义关键字，如：梦 / 青春" maxlength="6"><button class="cmt-send" onclick="setupBattleCustom()">开局</button></div>
+    <button class="listen" style="margin-top:8px" onclick="renderBattleMode()">‹ 返回选模式</button>`;
+}
+function aiPickKw(){
+  const kw = BATTLE_KWS[Math.floor(Math.random()*BATTLE_KWS.length)];
+  toast('🤖 AI 出题官：根据你的听歌口味，就出「'+kw+'」！');
+  setupBattle(kw);
+}
+function setupBattleCustom(){
+  const v = document.getElementById('custom-kw').value.trim();
+  if(!v){ toast('先输入关键字'); return; }
+  setupBattle(v);
+}
+function setupBattle(kw){
+  BATTLE.kw = kw; BATTLE.round = 0; BATTLE.myScore = 0; BATTLE.oppScore = 0;
+  BATTLE.myDouble = false; BATTLE.myBomb = null; BATTLE.oppBomb = null;
+  if(BATTLE.mode === 'bomb'){ renderBombPick(); return; }
+  startRound();
+}
+function renderBombPick(){
+  const matches = Object.keys(SONG_POOL).filter(s=>songMatch(s,BATTLE.kw));
+  document.getElementById('battle-body').innerHTML = `
+    <div class="battle-hint">💣 秘密选择你的炸弹歌（含「${BATTLE.kw}」）：对方一旦唱出它就被引爆</div>
+    ${matches.map(sid=>{ const s=SONG_POOL[sid];
+      return `<div class="mode-card" onclick="pickMyBomb('${sid}')"><div class="mode-icon">🎵</div>
+        <div class="mode-info"><b>${s.name}</b><span>${s.artist}</span></div><div class="mode-go">设弹</div></div>`;}).join('')}
+    <button class="listen" style="margin-top:8px" onclick="pickBattleKw('bomb')">‹ 返回</button>`;
+}
+function pickMyBomb(sid){
+  BATTLE.myBomb = sid;
+  const others = Object.keys(SONG_POOL).filter(s=>songMatch(s,BATTLE.kw) && s!==sid);
+  BATTLE.oppBomb = others[Math.floor(Math.random()*others.length)];
+  toast('你的炸弹已埋好，对方的炸弹也已就位');
+  startRound();
+}
+function startRound(){
+  BATTLE.round++;
+  BATTLE.turn = 'me';
+  BATTLE.options = genOptions();
+  renderBattleTurn();
+  startTimer();
+}
+function genOptions(){
+  const all = Object.keys(SONG_POOL);
+  const matches = all.filter(s=>songMatch(s,BATTLE.kw));
+  const non = all.filter(s=>!songMatch(s,BATTLE.kw));
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+  const picks = BATTLE.mode==='reverse'
+    ? [pick(matches), pick(non), pick(all)]
+    : [pick(matches), pick(all), pick(all)];
+  const uniq = [...new Set(picks)].filter(Boolean);
+  while(uniq.length < 3){
+    const extra = pick(all);
+    if(!uniq.includes(extra)) uniq.push(extra);
+  }
+  return uniq.slice(0,3);
+}
+function renderBattleTurn(){
+  const kwNote = BATTLE.mode==='reverse'
+    ? `禁字「${BATTLE.kw}」：唱的歌里<b>不能</b>含它！`
+    : `关键字「${BATTLE.kw}」：唱的歌里必须含它`;
+  document.getElementById('battle-body').innerHTML = `
+    <div class="vs-bar">
+      <div class="vs-player"><div class="avatar" style="background:linear-gradient(135deg,#c98a6a,#a85a44)">你</div><b>你</b><span class="vs-score">${BATTLE.myScore}</span></div>
+      <div class="vs-mid">第 ${BATTLE.round} 回合</div>
+      <div class="vs-player"><div class="avatar" style="background:${BATTLE.opp.color}">${BATTLE.opp.avatar}</div><b>${BATTLE.opp.name}</b><span class="vs-score">${BATTLE.oppScore}</span></div>
+    </div>
+    <div class="turn-bar ${BATTLE.turn==='me'?'':'opp'}">
+      ${BATTLE.turn==='me'
+        ? `<div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div><b>你的回合</b><span>8 秒内选一首${BATTLE.mode==='reverse'?'避开禁字':'含关键字'}的歌</span>`
+        : `<div class="opp-thinking">${BATTLE.opp.name} 正在接歌…<span class="spark">🎵</span></div>`}
+    </div>
+    <div class="battle-rule" id="battle-rule">${kwNote}</div>
+    ${BATTLE.turn==='me' ? `<div class="option-list" id="option-list">${BATTLE.options.map(sid=>{
+      const s = SONG_POOL[sid];
+      return `<div class="mode-card opt" onclick="myPick('${sid}')"><div class="mode-icon">🎵</div>
+        <div class="mode-info"><b>${s.name}</b><span>${s.artist} · ${lyricText(sid).slice(0,14)}…</span></div>
+        ${songMatch(sid,BATTLE.kw)?'<span class="opt-tag">含「'+BATTLE.kw+'」</span>':'<span class="opt-tag warn">不含</span>'}</div>`;
+    }).join('')}</div>` : ''}
+    <div class="section-h"><h3>技能卡</h3><span></span></div>
+    <div class="battle-cards">${renderCardSlots()}</div>`;
+}
+function startTimer(){
+  clearInterval(BATTLE.timer);
+  let left = 8;
+  const fill = document.getElementById('timer-fill');
+  if(fill) fill.style.width = '100%';
+  BATTLE.timer = setInterval(()=>{
+    left--;
+    if(fill) fill.style.width = (left/8*100)+'%';
+    if(left <= 0){
+      clearInterval(BATTLE.timer);
+      if(BATTLE.turn==='me'){ boomLose('⏱ 8 秒没接上，「'+BATTLE.kw+'」局你输了'); }
+    }
+  }, 1000);
+}
+function myPick(sid){
+  clearInterval(BATTLE.timer);
+  const s = SONG_POOL[sid];
+  const match = songMatch(sid, BATTLE.kw);
+  // 炸弹判定优先
+  if(BATTLE.mode==='bomb' && sid === BATTLE.oppBomb){
+    boomWin('💣 你唱出了对方的炸弹歌《'+s.name+'》——对方引爆！你赢了！');
+    return;
+  }
+  if(BATTLE.mode==='reverse' && match){
+    boomLose('🚫 「'+s.name+'」里藏着禁字「'+BATTLE.kw+'」——你踩雷了！');
+    return;
+  }
+  if(!match){
+    boomLose('❌ 《'+s.name+'》不含「'+BATTLE.kw+'」——接令失败！');
+    return;
+  }
+  // 成功得分
+  const gain = BATTLE.myDouble ? 2 : 1;
+  BATTLE.myScore += gain;
+  const gainTxt = BATTLE.myDouble ? '（双倍卡 +2）' : '（+1）';
+  BATTLE.myDouble = false;
+  toast('✓ AI 判官：歌词含「'+BATTLE.kw+'」，判定通过 '+gainTxt);
+  if(BATTLE.round >= 6){ battleResult(); return; }
+  oppTurn(sid);
+}
+function oppTurn(mySid){
+  BATTLE.turn = 'opp';
+  renderBattleTurn();
+  BATTLE.timer2 = setTimeout(()=>{
+    const matches = Object.keys(SONG_POOL).filter(s=>songMatch(s,BATTLE.kw));
+    const non = Object.keys(SONG_POOL).filter(s=>!songMatch(s,BATTLE.kw));
+    const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+    let oppSid;
+    if(BATTLE.mode==='bomb'){
+      // 对方随机接歌，可能踩中你的炸弹
+      oppSid = pick(matches);
+      if(oppSid === BATTLE.myBomb){
+        boomLose('💥 '+BATTLE.opp.name+' 唱出了你的炸弹歌《'+SONG_POOL[oppSid].name+'》——你被引爆了！');
+        return;
+      }
+    } else if(BATTLE.mode==='reverse'){
+      oppSid = Math.random()<0.35 ? pick(matches) : pick(non);
+      if(songMatch(oppSid,BATTLE.kw)){
+        boomWin('🚫 '+BATTLE.opp.name+' 唱出了禁字「'+BATTLE.kw+'」——《'+SONG_POOL[oppSid].name+'》踩雷！你赢了！');
+        return;
+      }
+    } else {
+      oppSid = pick(matches);
+    }
+    BATTLE.oppScore++;
+    BATTLE.oppLast = oppSid;
+    toast(BATTLE.opp.name+' 接了《'+SONG_POOL[oppSid].name+'》（+1）');
+    if(BATTLE.round >= 6){ battleResult(); return; }
+    startRound();
+  }, 1600);
+}
+function mySkip(){
+  BATTLE.turn = 'opp';
+  renderBattleTurn();
+  BATTLE.timer2 = setTimeout(()=>{ if(BATTLE.round>=6){ battleResult(); } else startRound(); }, 1200);
+}
+function boomWin(msg){ showBoom(true); BATTLE.resultMsg = msg; }
+function boomLose(msg){ showBoom(false); BATTLE.resultMsg = msg; }
+function showBoom(win){
+  const ov = document.getElementById('boomOverlay');
+  ov.classList.toggle('win', win);
+  ov.classList.add('show');
+  document.getElementById('boomOverlay').querySelector('.boom-text').textContent = win ? '赢 了' : '炸 了';
+  clearBattleTimers();
+  BATTLE.boomTimer = setTimeout(()=>{ ov.classList.remove('show'); battleResult(); }, 1500);
+}
+function battleResult(){
+  clearBattleTimers();
+  const decisive = BATTLE.oppLast ? SONG_POOL[BATTLE.oppLast] : null;
+  const win = BATTLE.resultMsg && BATTLE.resultMsg.includes('你赢');
+  const lose = BATTLE.resultMsg && (BATTLE.resultMsg.includes('你输') || BATTLE.resultMsg.includes('引爆') || BATTLE.resultMsg.includes('踩雷') || BATTLE.resultMsg.includes('接令失败') || BATTLE.resultMsg.includes('接不上'));
+  const title = win ? '🎉 你赢了！' : (lose ? '💥 惜败' : '🤝 平局收官');
+  document.getElementById('battle-body').innerHTML = `
+    <div class="result-box ${win?'win':(lose?'lose':'')}">
+      <div class="result-title serif">${title}</div>
+      <div class="result-score">你 ${BATTLE.myScore} : ${BATTLE.oppScore} ${BATTLE.opp.name}</div>
+      <div class="result-msg">${BATTLE.resultMsg || '六回合打满，棋逢对手'}</div>
+      ${decisive?`<div class="story-line" style="margin-top:10px">🎵 AI 故事卡：${decisive.story}</div>`:''}
+      <div class="modal-btns" style="margin-top:14px">
+        <button class="cancel" onclick="exitBattle()">返回</button>
+        <button class="ok" onclick="setupBattle('${BATTLE.kw}')">再来一局</button>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   本局战报（10.2 章：录屏/截图分享 → 战报卡片）
+   ============================================================ */
+function openReport(){
+  const r = ROOMS[curRoom]; if(!r) return;
+  const rr = STATS.rooms[curRoom] || {first:0,score:0,dups:0};
+  const songs = r.pool.slice(0,3).map(sid=>SONG_POOL[sid]).filter(Boolean);
+  document.getElementById('report-body').innerHTML = `
+    <div class="poster" style="margin-top:4px">
+      <div class="pz serif">${r.word}</div>
+      <div class="pt">飞花音 · 「${r.word}」字局战报</div>
+      <div class="pv serif">${rr.score} 分</div>
+      <div class="pl2">你的战绩：首唱 ${rr.first} · 跟唱 ${rr.dups||0} · 本房 ${r.players} 人在玩</div>
+      <div class="rep-songs">${songs.map((s,i)=>`<div class="rep-row"><span>${i+1}</span> ${s.name} · ${s.artist}</div>`).join('')}</div>
+      <div class="qr">▦▦▦<br>▦&nbsp;▦<br>▦▦▦</div>
+      <div class="pfoot">扫码进「${r.word}」字局接令 · 长按截图分享</div>
+    </div>
+    <p style="text-align:center;padding:8px 0 2px"><button class="listen" onclick="toast('长按战报截图即可分享到微信（录屏功能需 App 环境）')">📤 分享战报</button></p>`;
+  document.getElementById('reportModal').classList.add('open');
+}
+function closeReport(){ document.getElementById('reportModal').classList.remove('open'); }
+
+/* ============================================================
+   长期社群（10.4 章）
+   ============================================================ */
+const GROUPS = [
+  {id:'g1', name:'宿舍夜聊局', members:12, desc:'晚自习后的固定约歌据点', tag:'深夜'},
+  {id:'g2', name:'考研解压组', members:8, desc:'背不进去就吼两句', tag:'治愈'},
+  {id:'g3', name:'粤语歌友会', members:23, desc:'月半小夜曲常驻选手', tag:'粤语'},
+];
+const GROUP_MEMBERS = ['阿杰','小雨','十七','阿澈','小美','小林','星星','小明'];
+function openGroup(id){
+  const g = GROUPS.find(x=>x.id===id);
+  document.getElementById('group-title').textContent = g.name;
+  document.getElementById('group-sub').textContent = g.members+' 人 · '+g.desc;
+  document.getElementById('group-body').innerHTML = `
+    <div class="gm-list">${GROUP_MEMBERS.slice(0,6).map((m,i)=>`<div class="gm" ondblclick="dblAdd('${m}')"><div class="avatar" style="background:linear-gradient(135deg,#c98a6a,#a85a44)">${m[0]}</div><span>${m}</span></div>`).join('')}
+      <div class="gm more">+${g.members-6}</div></div>
+    <p class="sres-empty" style="padding:8px 0 4px">双击成员头像可加好友 · 群内可随时发起约战</p>
+    <div class="modal-btns">
+      <button class="ok" onclick="closeGroup();startBattle()">⚡ 发起约战</button>
+    </div>`;
+  document.getElementById('groupModal').classList.add('open');
+}
+function closeGroup(){ document.getElementById('groupModal').classList.remove('open'); }
+
+function cardHTML(c, cid){
+  const isText = c.type === 'text';
+  const s = isText ? null : SONG_POOL[c.song];
+  const dupCount = c.dups.length;
+  const cmtTotal = c.comments.length;
+  const voiceBar = isText
+    ? `<div class="txt-body">${c.text}</div>`
+    : (c.audio
+      ? `<div class="voice-bar real-audio" data-audio="${c.audio}">
+          <button class="vb-play" onclick="toggleVoiceAudio(this)">▶</button>
+          <div class="wave">${waveBars()}</div>
+          <div class="dur">${c.dur}</div>
+          <div class="lyr">${s.lyric}</div>
+        </div>`
+      : `<div class="voice-bar">
+          <div class="wave">${waveBars()}</div>
+          <div class="dur">${c.dur}</div>
+          <div class="lyr">${s.lyric}</div>
+        </div>`);
+  return `<article class="voice-card">
+    <div class="vc-head">
+      <div class="avatar" style="background:${c.grad}" ondblclick="dblAdd('${c.user}')" title="双击加好友">${c.user[0]}</div>
+      <div class="nm">${c.user}</div><div class="tm">${c.time}</div>
+      <span class="score-tag ${!isText && c.score.startsWith('+2')?'score-first':'score-dup'}">${isText?'发言':c.score}</span>
+    </div>
+    ${voiceBar}
+    ${isText?'':`<button class="listen" onclick="openPlayer('${c.song}')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 13v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="12" width="4.5" height="7" rx="1.6"/><rect x="17" y="12" width="4.5" height="7" rx="1.6"/></svg>
+      一起听《${s.name}》
+    </button>
+    <div class="story-line">🎵 AI 故事卡：${s.story}</div>`}
+    ${!isText && c.dups.length?`<div class="dups">${c.dups.map(d=>`
+      <div class="dup">
+        <div class="avatar" style="background:${d.grad}">${d.user[0]}</div>
+        <div class="mini-wave">${miniWave()}</div>
+        <div class="dlyr">${s.lyric.replace(/<[^>]+>/g,'')}</div>
+        <div class="who">${d.user} · ${d.time}</div>
+        <button class="dlisten" onclick="openPlayer('${c.song}')" aria-label="一起听">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 13v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="12" width="4.5" height="7" rx="1.6"/><rect x="17" y="12" width="4.5" height="7" rx="1.6"/></svg>
+        </button>
+      </div>`).join('')}</div>`:''}
+    <div class="comments">
+      ${c.comments.length?c.comments.slice(0,1).map(cmtHTML).join(''):''}
+      <div class="collapsed-more" id="more-${cid}">${c.comments.slice(1).map(cmtHTML).join('')}</div>
+      ${c.comments.length>1?`<button class="expand" onclick="toggleMore('more-${cid}',this)">展开全部 ${c.comments.length} 条评论 ▾</button>`:''}
+      <div class="cmt-row">
+        <input class="cmt-input" placeholder="说点什么…" maxlength="60">
+        <button class="cmt-send" onclick="addComment(${cid},this)">发送</button>
+      </div>
+    </div>
+    <div class="vc-actions">
+      <button class="act ${c.liked?'liked':''}" onclick="like(this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="${c.liked?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.4 5c2 0 3.4 1.2 4.6 2.8C11.2 6.2 12.6 5 14.6 5 18 5 19.6 8.6 22 11.8 19.5 16.4 12 21 12 21Z"/></svg>
+        <span class="n">${c.likes}</span></button>
+      <button class="act" onclick="toast('${dupCount?dupCount+' 人跟唱':'还没有人跟唱，相同歌词会自动归并到这里'}')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
+        <span class="n">${dupCount} 人跟唱</span></button>
+      <button class="act" onclick="toggleMore('more-${cid}',this)" ${cmtTotal?'':'disabled'}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-4.5A8 8 0 1 1 21 12Z"/></svg>
+        <span class="n">${cmtTotal} 条评论</span></button>
+    </div>
+  </article>`;
+}
+
+function cmtHTML(c){
+  return `<div class="cmt">
+    <div class="avatar" style="background:${c.grad}">${c.user[0]}</div>
+    <div><div class="cb"><b>${c.user}</b> ${c.text}</div></div>
+  </div>`;
+}
+
+function waveBars(){ return '<i style="height:8px"></i><i style="height:14px"></i><i style="height:20px"></i><i style="height:12px"></i><i style="height:22px"></i><i style="height:16px"></i><i style="height:10px"></i><i style="height:18px"></i><i style="height:13px"></i><i style="height:7px"></i>'; }
+function miniWave(){ return '<i style="height:6px"></i><i style="height:12px"></i><i style="height:9px"></i><i style="height:14px"></i><i style="height:7px"></i>'; }
+
+function goRoom(id){ closePlayer(); renderRoom(id); }
+
+/* ===== 自建房间 ===== */
+function openCreateModal(){ document.getElementById('createModal').classList.add('open'); document.getElementById('createInput').value=''; setTimeout(()=>document.getElementById('createInput').focus(),200); }
+function closeCreateModal(){ document.getElementById('createModal').classList.remove('open'); }
+function createRoom(){
+  const input = document.getElementById('createInput').value.trim();
+  if(!input){ toast('先输入一个字，如「梦」'); return; }
+  const id = 'c' + Date.now();
+  ROOMS[id] = { word:input.slice(0,2), players:1, unlocked:0, hot:false, custom:true, img:null, pool:[], cards:[], mine:'房主' };
+  closeCreateModal();
+  renderHome();
+  toast('「'+ROOMS[id].word+'」字局已创建，AI 正在生成背景板');
+  renderRoom(id);
+}
+
+/* ===== 录音（真实 MediaRecorder；无麦克风自动降级为演示模式） ===== */
+let rec=false, mediaRec=null, chunks=[], recStream=null, recStart=0, recTimerInt=null;
+
+function toggleRec(){
+  if(rec){ stopRec(); return; }
+  // 自检模式：跳过麦克风申请（无头浏览器权限请求会挂起）
+  if (new URLSearchParams(location.search).has('autotest')) { startSimRec(); return; }
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+      recStream=stream;
+      mediaRec=new MediaRecorder(stream);
+      chunks=[];
+      mediaRec.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
+      mediaRec.onstop=()=>{
+        if(recStream){ recStream.getTracks().forEach(t=>t.stop()); recStream=null; }
+        const durSec=Math.max(1, Math.round((Date.now()-recStart)/1000));
+        endRecUI();
+        if(chunks.length){
+          const blob=new Blob(chunks,{type:mediaRec.mimeType||'audio/webm'});
+          finishRec(URL.createObjectURL(blob), '0:0'+durSec);
+        } else {
+          toast('没录到声音，再试一次');
+        }
+      };
+      try {
+        mediaRec.start();
+      } catch(e) {
+        endRecUI(); startSimRec(); return;
+      }
+      rec=true; recStart=Date.now();
+      startRecUI();
+      toast('录音中…再点一下结束');
+    }).catch(()=>{ startSimRec(); });
+  } else startSimRec();
+}
+
+function stopRec(){
+  if(mediaRec && mediaRec.state!=='inactive') mediaRec.stop();
+  else { endRecUI(); toast('已取消录音'); }
+}
+
+function startRecUI(){
+  document.getElementById('recBtn').classList.add('rec');
+  const t=document.getElementById('rec-timer'); t.classList.add('show'); t.textContent='🎙 录音中 00:00';
+  recTimerInt=setInterval(()=>{
+    const s=Math.floor((Date.now()-recStart)/1000);
+    document.getElementById('rec-timer').textContent='🎙 录音中 00:'+String(s).padStart(2,'0');
+  },500);
+}
+function endRecUI(){
+  rec=false; mediaRec=null; chunks=[];
+  document.getElementById('recBtn').classList.remove('rec');
+  document.getElementById('rec-timer').classList.remove('show');
+  clearInterval(recTimerInt);
+}
+
+/* 无麦克风 / 权限被拒 → 演示模式（保证评审现场永不翻车） */
+function startSimRec(){
+  rec=true; recStart=Date.now();
+  startRecUI();
+  toast('（演示模式）录音中…AI 正在识别歌词');
+  setTimeout(()=>{
+    if(!rec) return;
+    endRecUI();
+    finishRec(null, null);
+  },2200);
+}
+
+function finishRec(audioUrl, dur){ aiJudge(audioUrl, dur); }
+
+function aiJudge(audioUrl, dur){
+  const r = ROOMS[curRoom];
+  const sung = r.cards.map(c=>c.song);
+  // 池中未唱过的歌 → 首唱 +2；全唱过 → 归并跟唱 +1
+  const fresh = r.pool.find(sid => !sung.includes(sid));
+  if (fresh || (r.custom && !r.pool.length)) {
+    let sid = fresh;
+    if (!sid) {
+      // 自建房间：曲库尚无收录，随机演示匹配一首
+      sid = Object.keys(SONG_POOL)[Math.floor(Math.random()*Object.keys(SONG_POOL).length)];
+    }
+    const s = SONG_POOL[sid];
+    r.cards.unshift({user:'你',ac:'#a85a44',grad:'linear-gradient(135deg,#c98a6a,#a85a44)',time:'刚刚',song:sid,
+      score:'+2 首唱',dur:dur||('0:0'+(3+Math.floor(Math.random()*6))),audio:audioUrl,dups:[],comments:[],likes:0});
+    r.unlocked++;
+    bumpStats(curRoom, true);
+    toast(`AI 判官：歌词含「${r.word}」✓ · 识别为《${s.name}》（${r.custom?'演示匹配':'首唱'}）+2 分`);
+  } else {
+    const first = r.cards[0];
+    first.dups.unshift({user:'你',ac:'#a85a44',grad:'linear-gradient(135deg,#c98a6a,#a85a44)',time:'刚刚'});
+    bumpStats(curRoom, false);
+    toast(`AI 判官：这句已有人唱过，自动归并 · 跟唱 +1 分`);
+  }
+  renderRoom(curRoom);
+}
+
+/* ===== 回放自己录的声音 ===== */
+let voiceAudio=null, voiceBarEl=null;
+function toggleVoiceAudio(btn){
+  const bar=btn.closest('.voice-bar');
+  const url=bar.dataset.audio;
+  if(voiceAudio && voiceBarEl===bar && !voiceAudio.paused){ voiceAudio.pause(); return; }
+  if(voiceAudio){ voiceAudio.pause(); }
+  if(voiceBarEl){ voiceBarEl.classList.remove('playing'); voiceBarEl.querySelector('.vb-play').textContent='▶'; }
+  voiceAudio=new Audio(url);
+  voiceBarEl=bar;
+  voiceAudio.onplay=()=>{ bar.classList.add('playing'); btn.textContent='⏸'; };
+  voiceAudio.onended=()=>{ bar.classList.remove('playing'); btn.textContent='▶'; };
+  voiceAudio.onpause=()=>{ bar.classList.remove('playing'); btn.textContent='▶'; };
+  voiceAudio.play();
+}
+
+/* ===== 发评论 ===== */
+function addComment(cid, btn){
+  const input = btn.parentElement.querySelector('.cmt-input');
+  const text = input.value.trim();
+  if(!text){ toast('写点什么再发送'); return; }
+  ROOMS[curRoom].cards[cid].comments.unshift({user:PROFILE.nick,ac:'#a85a44',grad:'linear-gradient(135deg,#c98a6a,#a85a44)',text});
+  renderRoom(curRoom);
+  toast('评论已发布');
+}
+
+/* ===== 个人资料 ===== */
+let PROFILE = JSON.parse(localStorage.getItem('feihua_profile')||'null') || { nick:'你', sign:'爱唱歌的生活观察家' };
+function saveProfile(){ localStorage.setItem('feihua_profile', JSON.stringify(PROFILE)); }
+function renderSettings(){
+  document.getElementById('settings-body').innerHTML = `
+    <div class="section-h"><h3>个人资料</h3><span>同步到战绩海报</span></div>
+    <div class="set-row" style="cursor:default;display:block">
+      <div class="sl" style="margin-bottom:0">昵称</div>
+      <input class="set-input" id="set-nick" maxlength="8" value="${PROFILE.nick}">
+      <div class="sl" style="margin:10px 0 0">个性签名</div>
+      <input class="set-input" id="set-sign" maxlength="24" value="${PROFILE.sign}">
+      <button class="listen" style="margin-top:12px" onclick="saveProfileFromSettings()">保存资料</button>
+    </div>
+    <div class="section-h"><h3>称号系统</h3><span></span></div>
+    <div class="set-row" onclick="openTitles()"><div class="sl">🏅 称号图鉴</div><div class="sv">查看全部称号 ›</div></div>
+    <div class="section-h"><h3>数据</h3><span></span></div>
+    <div class="set-row" onclick="resetStats()"><div class="sl">🗑 清除战绩数据</div><div class="sv">重置为演示基线</div></div>
+    <div class="section-h"><h3>关于</h3><span></span></div>
+    <div class="set-row"><div class="sl">飞花音 Demo</div><div class="sv">MVP 交互版 v3</div></div>
+    <div class="set-row"><div class="sl">试听说明</div><div class="sv" style="max-width:62%">AI 合成旋律示意，正式版接入 TME 正版曲库</div></div>`;
+}
+function saveProfileFromSettings(){
+  const nick = document.getElementById('set-nick').value.trim();
+  const sign = document.getElementById('set-sign').value.trim();
+  if(nick) PROFILE.nick = nick;
+  PROFILE.sign = sign;
+  saveProfile();
+  toast('资料已保存');
+}
+function resetStats(){
+  if(!confirm('确定清除战绩数据？')) return;
+  STATS = { total:21, songs:9, first:6, dups:3, streak:3, bestStreak:4,
+    rooms:{ yue:{first:3,score:6,dups:0}, ye:{first:2,score:4,dups:0}, yu:{first:1,score:2,dups:0} },
+    cards:['tiaoguo'], cardsEarned:3 };
+  saveStats();
+  renderHome();
+  toast('战绩已重置');
+}
+function goSettings(){ closePlayer(); setTab('me'); renderSettings(); show('view-settings'); }
+
+/* ===== 搜索 ===== */
+function openSearch(){
+  document.getElementById('searchModal').classList.add('open');
+  document.getElementById('searchInput').value='';
+  searchFilter('');
+  setTimeout(()=>document.getElementById('searchInput').focus(),200);
+}
+function closeSearch(){ document.getElementById('searchModal').classList.remove('open'); }
+function searchFilter(q){
+  q = (q||'').trim();
+  const box = document.getElementById('searchResults');
+  if(!q){ box.innerHTML = '<div class="sres-empty">输入字或歌名开始搜索</div>'; return; }
+  const rooms = Object.entries(ROOMS).filter(([,r])=>r.word.includes(q))
+    .map(([id,r])=>`<div class="sres-item" onclick="closeSearch();goRoom('${id}')">
+      <div class="zi serif">${r.word}</div>
+      <div class="info"><div class="t">「${r.word}」字局${r.custom?' · 自建':''}</div><div class="m">${r.players} 人在玩 · 已解锁 ${r.unlocked} 首</div></div></div>`);
+  const songHits = [];
+  const ql = q.toLowerCase();
+  Object.entries(ROOMS).forEach(([id,r])=>{
+    r.pool.forEach(sid=>{
+      const s = SONG_POOL[sid];
+      if(s.name.toLowerCase().includes(ql) || s.artist.toLowerCase().includes(ql)) songHits.push(`<div class="sres-item" onclick="closeSearch();goRoom('${id}')">
+        <div class="zi g serif">${r.word}</div>
+        <div class="info"><div class="t">${s.name}</div><div class="m">${s.artist} · 「${r.word}」字局</div></div></div>`);
+    });
+  });
+  // 多语言：按歌词搜（love / 雨 等关键字直接命中歌词）
+  Object.keys(SONG_POOL).forEach(sid=>{
+    const s = SONG_POOL[sid];
+    if(lyricText(sid).toLowerCase().includes(ql) && !songHits.some(x=>x.includes(s.name))){
+      songHits.push(`<div class="sres-item" onclick="closeSearch();openPlayer('${sid}')">
+        <div class="zi g serif">词</div>
+        <div class="info"><div class="t">${s.name}</div><div class="m">${s.artist} · 歌词含「${q}」</div></div></div>`);
+    }
+  });
+  const html = rooms.join('') + songHits.join('');
+  box.innerHTML = html || `<div class="sres-empty">没有找到「${q}」相关的房间或歌曲</div>`;
+}
+
+/* ===== 称号图鉴 ===== */
+const TITLES = [
+  {name:'令徒', min:0,  desc:'初入飞花，敢开口就是赢'},
+  {name:'令士', min:10, desc:'接歌十首，渐入佳境'},
+  {name:'令主', min:30, desc:'一个房间的节奏由你把控'},
+  {name:'诗仙', min:60, desc:'以歌为诗，天下谁人不识君'},
+];
+function openTitles(){
+  const lv = levelOf(STATS.total);
+  document.getElementById('titles-cur').textContent = lv.name + ' · ' + STATS.total + ' 分';
+  document.getElementById('titlesList').innerHTML = TITLES.map(t=>{
+    const cur = t.name === lv.name;
+    const got = STATS.total >= t.min;
+    return `<div class="tl-row ${cur?'cur':''}">
+      <div class="zi2 serif" style="${got?'background:var(--red);color:#FBEFEA':'background:var(--paper);color:var(--faint);border:1px solid var(--line)'}">${t.name[0]}</div>
+      <div class="info"><div class="t">${t.name}</div><div class="m">${t.desc} · 需 ${t.min} 分</div></div>
+      <div class="st ${got?'':'lock'}">${cur?'当前':(got?'已解锁':'未解锁')}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('titlesModal').classList.add('open');
+}
+function closeTitles(){ document.getElementById('titlesModal').classList.remove('open'); }
+
+/* ===== 空房间文字发言 ===== */
+function postFirstText(){
+  const input = document.getElementById('first-post');
+  const text = input.value.trim();
+  if(!text){ toast('写点什么再发送'); return; }
+  ROOMS[curRoom].cards.unshift({user:PROFILE.nick,ac:'#a85a44',grad:'linear-gradient(135deg,#c98a6a,#a85a44)',time:'刚刚',type:'text',text,dups:[],comments:[],likes:0});
+  renderRoom(curRoom);
+  toast('发言成功');
+}
+
+/* ============================================================
+   AI 合成试听：每首歌的副歌旋律（近似简谱示意）
+   正式产品调用 TME 正版曲库；Demo 用 Web Audio 合成保证有声
+   ============================================================ */
+const MELODIES = {
+  y1:{bpm:72,notes:[[5,4,1],[3,4,.5],[5,4,.5],[6,4,1],[5,4,1],[3,4,.5],[5,4,.5],[1,5,2],[6,4,1],[5,4,.5],[3,4,.5],[2,4,1],[1,4,2]]},
+  y2:{bpm:76,notes:[[3,4,1],[5,4,1],[6,4,1],[1,5,1],[6,4,.5],[5,4,.5],[3,4,1],[5,4,1],[3,4,1],[2,4,1],[3,4,2],[2,4,1],[1,4,2]]},
+  y3:{bpm:80,notes:[[6,4,.5],[7,4,.5],[1,5,1],[7,4,.5],[6,4,.5],[5,4,1],[3,4,1],[2,4,1],[3,4,2],[5,4,1],[6,4,1],[7,4,.5],[1,5,.5],[7,4,1],[6,4,1],[5,4,2]]},
+  y4:{bpm:66,notes:[[6,4,1],[1,5,1],[2,5,1],[3,5,1.5],[5,5,.5],[3,5,1],[2,5,1],[1,5,1],[6,4,1],[1,5,2]]},
+  r1:{bpm:88,notes:[[3,4,.5],[3,4,.5],[2,4,1],[1,4,.5],[7,3,.5],[1,4,1],[2,4,1],[3,4,1],[5,4,2],[2,4,1],[1,4,1],[7,3,1],[6,3,2]]},
+  r2:{bpm:82,notes:[[5,4,.5],[5,4,.5],[6,4,1],[1,5,1],[1,5,.5],[7,4,.5],[6,4,1],[5,4,1],[3,4,1],[2,4,2],[3,4,1],[2,4,1],[1,4,2]]},
+  r3:{bpm:90,notes:[[3,4,.5],[5,4,.5],[6,4,1],[1,5,1],[2,5,1],[1,5,.5],[6,4,.5],[5,4,1],[3,4,1],[2,4,1],[3,4,2]]},
+  f1:{bpm:96,notes:[[3,4,.5],[5,4,.5],[6,4,1],[1,5,1],[2,5,1],[3,5,1],[2,5,.5],[1,5,.5],[6,4,1],[5,4,1],[3,4,1],[2,4,1],[3,4,2]]},
+  f2:{bpm:92,notes:[[5,4,.5],[6,4,.5],[1,5,1],[2,5,1],[1,5,1],[6,4,.5],[5,4,.5],[3,4,1],[5,4,1],[2,4,1],[1,4,1],[6,3,1],[5,3,2]]},
+  f3:{bpm:86,notes:[[3,4,.5],[5,4,.5],[6,4,1],[1,5,1],[2,5,1],[3,5,1],[5,5,1],[3,5,.5],[2,5,.5],[1,5,1],[6,4,1],[5,4,1],[3,4,2]]},
+  ye1:{bpm:84,notes:[[6,4,.5],[7,4,.5],[1,5,1],[7,4,1],[6,4,.5],[5,4,.5],[6,4,1],[3,4,1],[2,4,1],[1,4,1],[2,4,2]]},
+  ye2:{bpm:92,notes:[[5,4,1],[6,4,1],[1,5,1],[2,5,1],[3,5,1],[2,5,1],[1,5,1],[6,4,1],[5,4,1],[3,4,1],[5,4,1],[6,4,1],[5,4,2]]},
+  ye3:{bpm:88,notes:[[6,4,.5],[7,4,.5],[1,5,1],[2,5,1],[1,5,.5],[7,4,.5],[6,4,1],[5,4,1],[3,4,1],[2,4,1],[3,4,2]]},
+};
+const SYNTH = {
+  ctx:null, oscs:[], endTimer:null, available:true,
+  SM:{1:0,2:2,3:4,4:5,5:7,6:9,7:11},
+  ensure(){
+    try{
+      if(!this.ctx){
+        const AC = window.AudioContext||window.webkitAudioContext;
+        if(!AC) throw new Error('no AudioContext');
+        this.ctx = new AC();
+      }
+      if(this.ctx.state==='suspended') this.ctx.resume();
+      return this.ctx;
+    }catch(e){ this.available=false; return null; }
+  },
+  playSong(mel, onended){
+    const ctx = this.ensure();
+    if(!ctx){ onended && onended(); return; }
+    this.stop();
+    const t0 = ctx.currentTime + 0.06;
+    const master = ctx.createGain(); master.gain.value = 0.85; master.connect(ctx.destination);
+    // 空间混响（delay 反馈）
+    const delay = ctx.createDelay(); delay.delayTime.value = 0.3;
+    const fb = ctx.createGain(); fb.gain.value = 0.3;
+    const wet = ctx.createGain(); wet.gain.value = 0.32; wet.connect(ctx.destination);
+    delay.connect(fb); fb.connect(delay); delay.connect(wet);
+    master.connect(delay);
+    const beat = 60 / mel.bpm;
+    let t = t0;
+    for(const [deg, oct, beats] of mel.notes){
+      const midi = 60 + (oct-4)*12 + this.SM[deg];
+      const freq = 440 * Math.pow(2, (midi-69)/12);
+      const dur = beats * beat;
+      // 主音：三角波
+      const o1 = ctx.createOscillator(); o1.type = 'triangle'; o1.frequency.value = freq;
+      const g1 = ctx.createGain();
+      g1.gain.setValueAtTime(0.0001, t);
+      g1.gain.linearRampToValueAtTime(0.5, t+0.03);
+      g1.gain.setValueAtTime(0.5, t+dur*0.65);
+      g1.gain.linearRampToValueAtTime(0.0001, t+dur*0.95);
+      o1.connect(g1); g1.connect(master);
+      // 泛音：高八度正弦轻垫
+      const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq*2;
+      const g2 = ctx.createGain();
+      g2.gain.setValueAtTime(0.0001, t);
+      g2.gain.linearRampToValueAtTime(0.1, t+0.03);
+      g2.gain.linearRampToValueAtTime(0.0001, t+dur*0.9);
+      o2.connect(g2); g2.connect(master);
+      o1.start(t); o1.stop(t+dur*0.96);
+      o2.start(t); o2.stop(t+dur*0.96);
+      this.oscs.push(o1, o2);
+      t += dur;
+    }
+    const total = (t - t0)*1000 + 600;
+    this.endTimer = setTimeout(()=>{ this.stop(); onended && onended(); }, total);
+  },
+  stop(){
+    this.oscs.forEach(o=>{ try{ o.stop(); }catch(e){} });
+    this.oscs = [];
+    if(this.endTimer){ clearTimeout(this.endTimer); this.endTimer = null; }
+  }
+};
+function fmtSec(s){ return Math.floor(s/60)+':'+String(Math.round(s%60)).padStart(2,'0'); }
+
+/* ===== 一起听弹层（进度真实走动） ===== */
+let playing=false, openSongId=null, pTimer=null, pPct=0, audioMode='visual', pStart=0, pDur=180;
+const $=id=>document.getElementById(id);
+function openPlayer(sid){
+  const s=SONG_POOL[sid];
+  openSongId=sid;
+  $('pName').textContent=s.name; $('pArtist').textContent=s.artist;
+  $('discWord').textContent=(ROOMS[curRoom]||{word:'飞'}).word;
+  $('pLyric').innerHTML=s.lyric;
+  const mel=MELODIES[sid];
+  if(mel){ pDur = mel.notes.reduce((a,n)=>a+n[2],0) * 60/mel.bpm; }
+  $('totTime').textContent = fmtSec(pDur);
+  $('ai-tag-txt').textContent = mel ? 'AI 合成试听 · 正式版接入 TME 正版曲库' : '试听示意 · 正式版接入 TME 正版曲库';
+  $('pStory').textContent = s.story ? '🎵 AI 故事卡：'+s.story : '';
+  setPlay(false);
+  pPct=0; updateProg();
+  $('playerOverlay').classList.add('open');
+}
+function closePlayer(){ $('playerOverlay').classList.remove('open'); setPlay(false); SYNTH.stop(); clearInterval(pTimer); }
+function setPlay(v){
+  playing=v;
+  $('disc').classList.toggle('playing',v); $('arm').classList.toggle('on',v);
+  $('icPlay').style.display=v?'none':'block'; $('icPause').style.display=v?'block':'none';
+  clearInterval(pTimer);
+  if(v){
+    const mel=MELODIES[openSongId];
+    if(mel){
+      audioMode='synth';
+      SYNTH.playSong(mel, ()=>{ if(playing){ pPct=100; updateProg(); setPlay(false); } });
+      pStart=Date.now();
+      pTimer=setInterval(()=>{ pPct=Math.min(100,(Date.now()-pStart)/1000/pDur*100); updateProg(); },100);
+    } else {
+      audioMode='visual';
+      pTimer=setInterval(()=>{ pPct+=0.4; if(pPct>100)pPct=0; updateProg(); },100);
+    }
+  } else {
+    SYNTH.stop();
+  }
+}
+function updateProg(){
+  if(!openSongId) return;
+  document.querySelector('.prog .fill').style.width=pPct+'%';
+  document.querySelector('.prog .knob').style.left=pPct+'%';
+  const cur=Math.round(pDur*pPct/100);
+  $('curTime').textContent=fmtSec(cur);
+}
+function togglePlay(){setPlay(!playing);}
+
+/* ===== 折叠评论 / 点赞 / toast ===== */
+function toggleMore(id,btn){
+  const el=$(id); if(!el) return;
+  const open=el.classList.toggle('open');
+  btn=btn||el.parentElement.querySelector('.expand');
+  if(btn){
+    if(!btn.dataset.more)btn.dataset.more=btn.textContent;
+    btn.textContent=open?'收起评论 ▴':btn.dataset.more;
+  }
+}
+function like(btn){
+  const liked=btn.classList.contains('liked');
+  btn.classList.toggle('liked',!liked);
+  const n=btn.querySelector('.n');
+  n.textContent=Math.max(0,parseInt(n.textContent,10)+(liked?-1:1));
+  const svg=btn.querySelector('svg');
+  svg.setAttribute('fill',liked?'none':'currentColor');
+  svg.setAttribute('stroke',liked?'currentColor':'none');
+}
+let tt;
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ===== 启动 ===== */
+renderHome();
+
+/* ============================================================
+   内置自检：?autotest=1 走完整用户路径
+   ============================================================ */
+async function runAutotest(){
+  const report = document.getElementById('autotest-report');
+  const lines = [];
+  const t = (name, ok, extra='') => lines.push((ok?'PASS ':'FAIL ')+name+(extra?' | '+extra:''));
+  const wait = ms => new Promise(r=>setTimeout(r,ms));
+  const click = el => { if(!el) throw new Error('not found'); el.click(); };
+
+  try {
+    // 重置战绩与资料基线，保证测试可重复
+    localStorage.removeItem('feihua_stats');
+    STATS = { total:21, songs:9, first:6, dups:3, streak:3, bestStreak:4,
+      rooms:{ yue:{first:3,score:6,dups:0}, ye:{first:2,score:4,dups:0}, yu:{first:1,score:2,dups:0} },
+      cards:['tiaoguo'], cardsEarned:3 };
+    saveStats();
+    localStorage.removeItem('feihua_profile');
+    PROFILE = { nick:'你', sign:'爱唱歌的生活观察家' };
+    saveProfile();
+    t('首页渲染 4 个官方房间', document.querySelectorAll('.room-card').length === 4);
+    t('排行榜徽标存在(TOP3)', document.querySelectorAll('.rank-badge').length === 3);
+    const first = document.querySelector('.room-card .info .t').textContent;
+    t('榜单按人数排序(夜字局第一)', first.includes('夜'), first);
+
+    // 多维筛选（05 章）
+    cycleFilter('genre');
+    await wait(100);
+    t('筛选曲风·流行', document.querySelectorAll('.room-card').length === 3, document.querySelectorAll('.room-card').length+' 房');
+    cycleFilter('genre');
+    await wait(100);
+    t('筛选曲风·民谣', document.querySelectorAll('.room-card').length === 1);
+    resetFilter();
+    await wait(100);
+    t('清除筛选恢复', document.querySelectorAll('.room-card').length === 4);
+
+    // 进入「雨」字局
+    goRoom('yu');
+    await wait(100);
+    t('房间页打开', document.getElementById('view-room').classList.contains('active'));
+    t('AI 背景板图片加载', !!document.querySelector('#bgboard img[src*="yu.jpg"]'));
+    t('规则条含关键字', document.getElementById('rulebar').textContent.includes('雨'));
+    t('主链渲染语音卡', document.querySelectorAll('.voice-card').length >= 2, document.querySelectorAll('.voice-card').length+' 张');
+    t('得分标记存在', !!document.querySelector('.score-tag'));
+    t('AI 故事卡上链', !!document.querySelector('.story-line'));
+
+    // 录音 → AI 判官闭环（池中未唱的歌 → 首唱 +2）
+    const statsBefore = STATS.total;
+    const cardsBefore = document.querySelectorAll('.voice-card').length;
+    click(document.getElementById('recBtn'));
+    await wait(2800);
+    const cardsAfter = document.querySelectorAll('.voice-card').length;
+    t('录音后 AI 判官新增首唱卡', cardsAfter === cardsBefore + 1, cardsBefore+' → '+cardsAfter);
+    t('新卡为「你」且 +2 分', !!document.querySelector('.voice-card .nm') && document.querySelector('.voice-card .nm').textContent === '你'
+      && document.querySelector('.voice-card .score-tag').textContent === '+2 首唱');
+
+    // 唱完全部池子 → 归并跟唱 +1
+    click(document.getElementById('recBtn'));
+    await wait(2800);
+    click(document.getElementById('recBtn'));
+    await wait(2800);
+    t('重复歌词自动归并', document.querySelector('.voice-card .dups .who') !== null);
+
+    // 一起听弹层
+    click(document.querySelector('.listen'));
+    await wait(100);
+    t('一起听弹层打开', document.getElementById('playerOverlay').classList.contains('open'));
+    t('歌曲信息正确', document.getElementById('pName').textContent.length > 0, document.getElementById('pName').textContent);
+    click(document.getElementById('playBtn'));
+    await wait(600);
+    t('合成试听引擎启动', audioMode === 'synth' || !SYNTH.available, 'mode=' + audioMode);
+    const fillW = parseFloat(document.querySelector('.prog .fill').style.width);
+    t('播放器进度真实走动', fillW > 0, fillW + '%');
+    closePlayer();
+
+    // 战绩实时累计：+2（首唱）+1（跟唱）+1（跟唱）
+    t('战绩数据实时累计', STATS.total === statsBefore + 4, statsBefore+' → '+STATS.total);
+    t('技能卡自动获得(满3首发卡)', STATS.cards.length >= 2, STATS.cards.length+' 张');
+
+    // 评论真的能发
+    const cmtInput = document.querySelector('.cmt-input');
+    cmtInput.value = '自检评论：这局我来了';
+    click(document.querySelector('.cmt-send'));
+    await wait(100);
+    t('评论发布成功', document.body.textContent.includes('自检评论：这局我来了'));
+
+    // 房间设置
+    click(document.getElementById('btn-room-set'));
+    await wait(100);
+    t('房间设置弹层打开', document.getElementById('roomSetModal').classList.contains('open'));
+    t('设置含玩法模式', document.getElementById('rset-body').textContent.includes('异步接力'));
+    t('设置含实时对战入口', document.getElementById('rset-body').textContent.includes('实时对战'));
+    click(document.querySelector('#rset-body [onclick*="openReport"]'));
+    await wait(100);
+    t('本局战报弹层打开', document.getElementById('reportModal').classList.contains('open'));
+    t('战报含房间信息', document.getElementById('report-body').textContent.includes('字局战报'));
+    closeReport();
+    closeRoomSet();
+
+    // 自建房间
+    openCreateModal();
+    const input = document.getElementById('createInput');
+    input.value = '梦';
+    createRoom();
+    await wait(100);
+    t('自建房间创建并进入', document.getElementById('room-title').textContent.includes('梦'));
+    t('自建房间 AI 背景板生成中', document.getElementById('bgboard').classList.contains('custom'));
+    t('自建房间空状态', document.getElementById('feed').textContent.includes('花传到你'));
+
+    // 自建房间发言：文字
+    const fp = document.getElementById('first-post');
+    fp.value = '这个字我先占个位置';
+    click(document.querySelector('.cmt-send'));
+    await wait(100);
+    t('空房间文字发言上链', !!document.querySelector('.voice-card .txt-body')
+      && document.querySelector('.voice-card .txt-body').textContent.includes('占个位置'));
+    t('文字卡标记为发言', document.querySelector('.voice-card .score-tag').textContent === '发言');
+    // 自建房间录音发言
+    click(document.getElementById('recBtn'));
+    await wait(2800);
+    t('自建房间录音出卡', document.querySelectorAll('.voice-card').length === 2, document.querySelectorAll('.voice-card').length+' 张');
+
+    // 返回首页
+    goHome();
+    await wait(100);
+    t('返回首页且自建房进榜', document.querySelectorAll('.room-card').length === 5);
+    t('自建标记显示', !!document.querySelector('.room-card .mine') || document.body.textContent.includes('自建'));
+
+    // 战绩页
+    click(document.getElementById('tab-records'));
+    await wait(100);
+    t('战绩页打开', document.getElementById('view-records').classList.contains('active'));
+    t('统计卡渲染 6 项', document.querySelectorAll('#records-body .stat-card').length === 6);
+    t('等级称号展示', !!document.querySelector('.level-banner .lv b'));
+    t('房间战绩行渲染', document.querySelectorAll('#records-body .rstat').length >= 3, document.querySelectorAll('#records-body .rstat').length+' 行');
+    t('AI 战绩海报渲染', !!document.querySelector('.poster .pv'), document.querySelector('.poster .pv').textContent);
+
+    // 我的页
+    click(document.getElementById('tab-me'));
+    await wait(100);
+    t('我的页打开', document.getElementById('view-me').classList.contains('active'));
+    t('共享歌单渲染', document.querySelectorAll('#me-body .srow').length >= 5, document.querySelectorAll('#me-body .srow').length+' 首');
+    t('称号徽章显示', !!document.querySelector('.lv-chip'));
+    t('最近参与渲染', document.querySelectorAll('#me-body .rstat').length >= 1);
+    t('技能卡背包渲染', !!document.querySelector('#me-body .card-slot'));
+    t('社群区块渲染', document.getElementById('me-body').textContent.includes('歌友社群'));
+
+    // 歌友社群
+    openGroup('g1');
+    await wait(100);
+    t('社群弹层打开', document.getElementById('groupModal').classList.contains('open'));
+    t('群成员渲染', document.querySelectorAll('#group-body .gm').length >= 2);
+    closeGroup();
+
+    // 称号图鉴
+    openTitles();
+    await wait(100);
+    t('图鉴弹层打开', document.getElementById('titlesModal').classList.contains('open'));
+    t('图鉴 4 个称号', document.querySelectorAll('#titlesList .tl-row').length === 4);
+    t('当前称号高亮', !!document.querySelector('#titlesList .tl-row.cur'));
+    closeTitles();
+
+    // 设置页（从我的页进入）
+    goSettings();
+    await wait(100);
+    t('设置页打开', document.getElementById('view-settings').classList.contains('active'));
+    document.getElementById('set-nick').value = '花仙';
+    click(document.querySelector('#settings-body .listen'));
+    await wait(100);
+    t('昵称保存生效', PROFILE.nick === '花仙');
+    goMe();
+    await wait(100);
+    t('设置返回我的页', document.getElementById('view-me').classList.contains('active'));
+
+    // 回首页 + 搜索
+    click(document.getElementById('tab-home'));
+    await wait(100);
+    t('回首页正常', document.getElementById('view-home').classList.contains('active'));
+    openSearch();
+    searchFilter('夜');
+    t('搜索房间结果', document.getElementById('searchResults').querySelectorAll('.sres-item').length >= 1);
+    searchFilter('起风了');
+    t('搜索歌曲结果', document.getElementById('searchResults').textContent.includes('起风了'));
+    searchFilter('love');
+    t('搜索多语言英文歌', document.getElementById('searchResults').textContent.includes('Love Story'));
+    closeSearch();
+    t('搜索弹层关闭', !document.getElementById('searchModal').classList.contains('open'));
+
+    // 实时对战（06 章）
+    startBattle();
+    await wait(100);
+    t('对战模式选择页', document.querySelectorAll('.mode-card').length >= 4);
+    click(document.querySelector('.mode-card'));
+    await wait(100);
+    t('关键字选择页', document.querySelectorAll('.kw-chip').length === 5);
+    click(document.querySelector('.kw-chip'));
+    await wait(200);
+    t('对战回合渲染', !!document.querySelector('.vs-bar'));
+    t('候选歌渲染 3 首', document.querySelectorAll('#option-list .opt').length === 3);
+    const opt = [...document.querySelectorAll('#option-list .opt')].find(o=>{
+      const tag = o.querySelector('.opt-tag');
+      return tag && !tag.classList.contains('warn');
+    });
+    t('存在含关键字候选', !!opt);
+    click(opt);
+    await wait(300);
+    t('AI 判官判定通过得分', BATTLE.myScore === 1 && BATTLE.turn === 'opp', BATTLE.myScore+' 分');
+    await wait(1900);
+    t('对手回合完成', BATTLE.turn === 'me' && BATTLE.oppScore === 1, BATTLE.oppScore+' 分');
+    exitBattle();
+    await wait(100);
+    t('退出对战回首页', document.getElementById('view-home').classList.contains('active'));
+  } catch(e){
+    t('异常中断', false, e.message);
+  }
+  report.textContent = 'AUTOTEST\n' + lines.join('\n') + '\nRESULT: ' + (lines.some(l=>l.startsWith('FAIL'))?'HAS FAILURES':'ALL PASS');
+}
+if (new URLSearchParams(location.search).has('autotest')) {
+  setTimeout(runAutotest, 500);
+}
+</script>
+</body>
+</html>
