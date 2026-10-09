@@ -153,15 +153,17 @@ body{
 .expand{border:none;background:none;font-size:11px;color:var(--faint);cursor:pointer;padding:2px 0;align-self:flex-start;}
 .collapsed-more{display:none;flex-direction:column;gap:7px;}
 .collapsed-more.open{display:flex;}
-/* 底部录音栏 */
-.recbar{position:absolute;bottom:0;left:0;right:0;padding:12px 16px 20px;background:linear-gradient(to top,rgba(246,242,234,.98) 70%,rgba(246,242,234,.6),transparent);
-  display:flex;align-items:center;gap:12px;z-index:25;}
+/* 底部录音栏（在全局导航栏上方，避免被盖住） */
+.recbar{position:absolute;bottom:74px;left:0;right:0;padding:12px 16px 14px;background:linear-gradient(to top,rgba(246,242,234,.98) 70%,rgba(246,242,234,.6),transparent);
+  display:flex;align-items:center;gap:12px;z-index:35;}
 .rec-hint{flex:1;font-size:12px;color:var(--sub);line-height:1.4;}
 .rec-hint b{color:var(--red);}
-.rec-btn{width:54px;height:54px;border-radius:50%;background:var(--red);border:none;color:#fff;display:flex;align-items:center;justify-content:center;
+.rec-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:none;}
+.rec-btn{width:58px;height:58px;border-radius:50%;background:var(--red);border:none;color:#fff;display:flex;align-items:center;justify-content:center;
   box-shadow:0 8px 18px rgba(181,55,46,.4);cursor:pointer;flex:none;transition:transform .15s;}
 .rec-btn:active{transform:scale(.92);}
 .rec-btn.rec{background:#d8493f;animation:pulse 1.2s infinite;}
+.rec-label{font-size:10.5px;color:var(--red);font-weight:700;}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(216,73,63,.5)}70%{box-shadow:0 0 0 16px rgba(216,73,63,0)}100%{box-shadow:0 0 0 0 rgba(216,73,63,0)}}
 
 /* 一起听弹层 */
@@ -458,9 +460,12 @@ body{
 
     <div class="recbar">
       <div class="rec-hint" id="rec-hint"></div>
-      <button class="rec-btn" id="recBtn" onclick="toggleRec()" aria-label="录音">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
-      </button>
+      <div class="rec-wrap">
+        <button class="rec-btn" id="recBtn" onclick="toggleRec()" aria-label="录音接歌">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        </button>
+        <span class="rec-label" id="rec-label">🎤 接歌</span>
+      </div>
     </div>
     <div class="rec-timer" id="rec-timer"></div>
   </section>
@@ -1435,6 +1440,7 @@ function toggleRec(){
       rec=true; recStart=Date.now();
       startRecUI();
       toast('录音中…再点一下结束');
+      setTimeout(()=>{ if(rec) stopRec(); }, 20000); // 最长 20 秒自动结束
     }).catch(()=>{ startSimRec(); });
   } else startSimRec();
 }
@@ -1446,6 +1452,7 @@ function stopRec(){
 
 function startRecUI(){
   document.getElementById('recBtn').classList.add('rec');
+  document.getElementById('rec-label').textContent = '⏹ 结束';
   const t=document.getElementById('rec-timer'); t.classList.add('show'); t.textContent='🎙 录音中 00:00';
   recTimerInt=setInterval(()=>{
     const s=Math.floor((Date.now()-recStart)/1000);
@@ -1455,6 +1462,7 @@ function startRecUI(){
 function endRecUI(){
   rec=false; mediaRec=null; chunks=[];
   document.getElementById('recBtn').classList.remove('rec');
+  document.getElementById('rec-label').textContent = '🎤 接歌';
   document.getElementById('rec-timer').classList.remove('show');
   clearInterval(recTimerInt);
 }
@@ -1835,6 +1843,8 @@ async function runAutotest(){
     goRoom('yu');
     await wait(100);
     t('房间页打开', document.getElementById('view-room').classList.contains('active'));
+    t('录音栏在导航栏上方(不被遮挡)', getComputedStyle(document.querySelector('.recbar')).bottom === '74px', getComputedStyle(document.querySelector('.recbar')).bottom);
+    t('接歌按钮可点击元素存在', !!document.getElementById('recBtn') && !!document.getElementById('rec-label'));
     t('AI 背景板图片加载', !!document.querySelector('#bgboard img[src*="yu.jpg"]'));
     t('规则条含关键字', document.getElementById('rulebar').textContent.includes('雨'));
     t('主链渲染语音卡', document.querySelectorAll('.voice-card').length >= 2, document.querySelectorAll('.voice-card').length+' 张');
